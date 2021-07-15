@@ -18,11 +18,12 @@
     "url": "https://github.com/Hotmoka/hotexplorer.git"
   },
   "dependencies": {
-    "core-js": "^3.6.5",
-    "vue": "^2.6.11",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.16.0",
-    "portal-vue": "^2.1.7"
+    "core-js": "^3.6.5",
+    "hotweb3": "^1.0.2",
+    "portal-vue": "^2.1.7",
+    "vue": "^2.6.11"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
