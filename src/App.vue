@@ -74,7 +74,6 @@ export default {
       return null
     },
     breadcrumbIndexOf(breadcrumb) {
-      console.log('breadcrumb', breadcrumb)
       return this.explorer.addresses.findIndex(address => address.id === breadcrumb.id)
     },
     setInactiveBreadcrumbs() {

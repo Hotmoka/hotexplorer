@@ -30,8 +30,9 @@
 
         <p v-if="explorer.state.updates.length === 0">Try with other object address</p>
 
-        <div v-if="explorer.rootObject && explorer.rootObject.jar">
-          <p>from jar installed at <span class="highlighted">{{explorer.rootObject.jar.hash}}</span></p>
+        <div v-if="explorer.rootObject">
+          <p v-if="getAddressOfRootObject" style="margin-bottom: 0">Address <span class="highlighted light-black">{{getAddressOfRootObject}}</span></p>
+          <p v-if="explorer.rootObject.jar">from jar installed at <span class="highlighted light-black">{{explorer.rootObject.jar.hash}}</span></p>
         </div>
 
         <div class="accordion" role="tablist" v-if="explorer.state.updates.length > 0">
@@ -162,7 +163,6 @@ export default {
       this.$emit('onSearch', stringObjectAddress)
     },
     onBreadcrumbclick(address) {
-      console.log(address)
       this.$emit('onSearch', address.id)
     }
   },
@@ -172,6 +172,12 @@ export default {
     },
     getStorageReferences() {
       return this.explorer.state.updates.filter(update => update.value && update.value.type && update.value.type === 'reference')
+    },
+    getAddressOfRootObject() {
+      if (this.explorer.rootObject && this.explorer.rootObject.object && this.explorer.rootObject.object.transaction && this.explorer.rootObject.object.transaction.hash) {
+        return this.explorer.rootObject.object.transaction.hash + '#' + parseInt(this.explorer.rootObject.object.progressive).toString(16)
+      }
+      return null
     }
   }
 }
@@ -207,5 +213,8 @@ export default {
 
 .root-address-name {
   color: #0031ca !important;
+}
+.light-black {
+  color: rgba(0,0,0,.65) !important;
 }
 </style>
