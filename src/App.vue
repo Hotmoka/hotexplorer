@@ -55,16 +55,27 @@ export default {
     },
     buildBreadcrumbAddress(rootAddress) {
       if (rootAddress) {
+        let className = ''
+        if (rootAddress.className && rootAddress.className.length > 0) {
+          if (rootAddress.className.indexOf('.') !== -1) {
+            className += ' (' + rootAddress.className.substring(rootAddress.className.lastIndexOf('.') + 1, rootAddress.className.length) + ')'
+          } else {
+            className += ' (' + rootAddress.className + ')'
+          }
+        }
+        const address = rootAddress.object.transaction.hash + '#' + parseInt(rootAddress.object.progressive).toString(16)
         return {
-          text: rootAddress.object.transaction.hash + '#' + parseInt(rootAddress.object.progressive).toString(16),
+          text: address + className,
           active: true,
-          href: '#'
+          href: '#',
+          id: address
         }
       }
       return null
     },
     breadcrumbIndexOf(breadcrumb) {
-      return this.explorer.addresses.findIndex(address => address.text === breadcrumb.text)
+      console.log('breadcrumb', breadcrumb)
+      return this.explorer.addresses.findIndex(address => address.id === breadcrumb.id)
     },
     setInactiveBreadcrumbs() {
       this.explorer.addresses.forEach(address => address.active = false)

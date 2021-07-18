@@ -1,7 +1,16 @@
 <template>
   <div v-if="explorer.state" class="mg-t p-b">
 
-    <b-breadcrumb :items="explorer.addresses" @click="onBreadcrumbclick"></b-breadcrumb>
+    <b-breadcrumb>
+      <b-breadcrumb-item
+          v-for="(address,index) in explorer.addresses"
+          :key="index"
+          :active="address.active"
+          @click="onBreadcrumbclick(address)"
+          href="#">
+        {{address.text}}
+      </b-breadcrumb-item>
+    </b-breadcrumb>
     <b-card
         class="shadow-sm hot-card-header"
         header-bg-variant="primary"
@@ -152,8 +161,9 @@ export default {
       const stringObjectAddress = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
       this.$emit('onSearch', stringObjectAddress)
     },
-    onBreadcrumbclick(event) {
-      this.$emit('onSearch', event.target.text)
+    onBreadcrumbclick(address) {
+      console.log(address)
+      this.$emit('onSearch', address.id)
     }
   },
   computed: {
