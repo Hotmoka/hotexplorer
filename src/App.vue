@@ -2,7 +2,7 @@
   <div id="app">
     <div v-if="showSpinner" id="loader" class="loader">Loading...</div>
 
-    <b-navbar toggleable="lg" type="dark" variant="info" style="background-color: #fafafa !important;">
+    <b-navbar toggleable="lg" type="dark" variant="info" style="background-color: #fff !important;">
       <div class="container" style="height: 48px">
         <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
       </div>
@@ -12,6 +12,10 @@
       <Search @onSearch="onSearch"></Search>
       <Explorer :state="state" ></Explorer>
     </div>
+
+    <b-alert v-model="errorAlert.show" variant="danger" dismissible class="position-fixed error-alert ">
+      {{errorAlert.message}}
+    </b-alert>
   </div>
 </template>
 
@@ -33,40 +37,77 @@ export default {
   data() {
    return {
      state: null,
-     showSpinner: false
+     showSpinner: false,
+     errorAlert: {
+       message: '',
+       show: false
+     }
    }
   },
   methods: {
     onSearch(objectAddress) {
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
-      const progressive = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[1] : '0'
+      const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
-      this.showSpinner = true
+      this.beforeHttpCall()
       remoteNode.getState(new StorageReferenceModel(new TransactionReferenceModel('local', hash), progressive))
       .then(state => {
         this.showSpinner = false
         this.state = state
       }).catch(err => {
-        this.showSpinner = false
-        alert(err.message)
+        this.onErrorHttpCall(err)
       })
+    },
+    beforeHttpCall() {
+      this.errorAlert.show = false
+      this.showSpinner = true
+    },
+    onErrorHttpCall(err) {
+      this.showSpinner = false
+      this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
+      this.errorAlert.show = true
     }
   }
 }
 </script>
 
-<style>
+<style lang="scss">
+$theme-colors: (
+    "primary": #00BEBA
+);
+@import "~bootstrap/scss/bootstrap.scss";
+@import '~bootstrap-vue/dist/bootstrap-vue.css';
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  background-color: #f4f4f4;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
 }
 
 .margin-top-page {
   margin-top: 3.5rem !important;
 }
+
+.error-alert {
+  bottom: 0;
+  width: 100%;
+  margin-bottom: 0!important;
+}
+
+.hot-card-header .card-header {
+  color: #fff !important;
+  font-weight: bolder;
+}
+
 
 .loader {
   position: absolute !important;
@@ -83,7 +124,7 @@ export default {
   animation: load5 1.1s infinite ease;
   -webkit-transform: translateZ(0);
   -ms-transform: translateZ(0);
-  transform: translateZ(0);
+  z-index: 10;
 }
 @-webkit-keyframes load5 {
   0%,
