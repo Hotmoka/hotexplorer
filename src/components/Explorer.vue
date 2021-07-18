@@ -27,14 +27,16 @@
 
         <div class="accordion" role="tablist" v-if="explorer.state.updates.length > 0">
 
-          <b-card-text class="header-updates">Value fields</b-card-text>
+          <b-card-text class="header-updates" v-if="getStorageValues.length > 0">Value fields</b-card-text>
           <div
               v-for="(update, index) in getStorageValues"
               :key="index"
           >
             <b-card no-body class="mb-1" v-if="update.field && update.field.name">
               <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button block v-b-toggle="'collapsed-value-' + index" variant="light" class="highlighted">{{update.field.name}}</b-button>
+                <b-button block v-b-toggle="'collapsed-value-' + index" variant="light" class="highlighted">
+                  {{update.field.name}}:<code>{{update.field.type}} = {{update.value.value}}</code>
+                </b-button>
               </b-card-header>
 
               <b-collapse :id="'collapsed-value-' + index" accordion="my-accordion" role="tabpanel" v-if="update.field && update.field.type">
@@ -42,10 +44,6 @@
 
                   <div class="row">
                     <div class="col-sm-6 col-xs-12">
-
-                      <div class="d-block text-left highlighted">
-                        Field
-                      </div>
 
                       <div class="d-block text-left">
                         Name <code>{{update.field.name}}</code>
@@ -61,9 +59,6 @@
                     </div>
 
                     <div class="col-sm-6 col-xs-12">
-                      <div class="d-block text-left highlighted">
-                        Value
-                      </div>
 
                       <div class="d-block text-left">
                         Value <code>{{update.value.value}}</code>
@@ -82,14 +77,16 @@
             </b-card>
           </div>
 
-          <b-card-text class="header-updates">Storage reference fields</b-card-text>
+          <b-card-text class="header-updates" v-if="getStorageReferences.length > 0">Storage reference fields</b-card-text>
           <div
               v-for="(update, index) in getStorageReferences"
               :key="index + getStorageValues.length"
           >
             <b-card no-body class="mb-1" v-if="update.field && update.field.name">
               <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button block v-b-toggle="'collapsed-reference-' + index + getStorageValues.length" variant="light" class="highlighted">{{update.field.name}}</b-button>
+                <b-button block v-b-toggle="'collapsed-reference-' + index + getStorageValues.length" variant="light" class="highlighted">
+                  {{update.field.name}}:<code>{{update.field.type}}</code>
+                </b-button>
               </b-card-header>
 
               <b-collapse :id="'collapsed-reference-' + index + getStorageValues.length" accordion="my-accordion" role="tabpanel" v-if="update.field && update.field.type">
@@ -97,10 +94,6 @@
 
                   <div class="row">
                     <div class="col-sm-6 col-xs-12">
-
-                      <div class="d-block text-left highlighted">
-                        Field
-                      </div>
 
                       <div class="d-block text-left">
                         Name <code>{{update.field.name}}</code>
@@ -116,9 +109,6 @@
                     </div>
 
                     <div class="col-sm-6 col-xs-12">
-                      <div class="d-block text-left highlighted">
-                        Value
-                      </div>
 
                       <div class="d-block text-left" v-if="update.value.reference">
                         Address <code class="storage-ref-code" @click="onAddressClick(update.value.reference)">{{update.value.reference.transaction.hash}}#{{parseInt(update.value.reference.progressive).toString(16)}}</code>

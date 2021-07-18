@@ -70,6 +70,9 @@ export default {
       this.explorer.addresses.forEach(address => address.active = false)
     },
     onSearch(objectAddress) {
+      if (!objectAddress) {
+        return
+      }
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
       const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
