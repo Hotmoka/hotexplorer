@@ -1,31 +1,33 @@
 <template>
-  <div v-if="state" class="mg-t p-b">
+  <div v-if="explorer.state" class="mg-t p-b">
+
+    <b-breadcrumb :items="explorer.addresses"></b-breadcrumb>
     <b-card
         class="shadow-sm hot-card-header"
         header-bg-variant="primary"
         header-tag="header">
 
       <template #header>
-        <h6 class="mb-0" v-if="state.updates.length > 0">
+        <h6 class="mb-0" v-if="explorer.state.updates.length > 0">
           <b-badge variant="secondary" style="margin-right: 6px">
-          {{state.updates.length}}
+          {{explorer.state.updates.length}}
           </b-badge>
-          <span class="highlighted">Updates of</span> <span class="highlighted">{{getClassName}}</span>
+          <span class="highlighted">Updates of</span> <span class="highlighted">{{explorer.rootObject.className}}</span>
         </h6>
-        <h6 class="mb-0" v-if="state.updates.length === 0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Updates</h6>
+        <h6 class="mb-0" v-if="explorer.state.updates.length === 0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Updates</h6>
       </template>
 
       <b-card-body>
 
-        <p v-if="state.updates.length === 0">Try with other object address</p>
+        <p v-if="explorer.state.updates.length === 0">Try with other object address</p>
 
-        <div v-if="rootObject = getRootObject">
-          <p>from jar installed at <span class="highlighted">{{rootObject.jar.hash}}</span></p>
+        <div v-if="explorer.rootObject && explorer.rootObject.jar">
+          <p>from jar installed at <span class="highlighted">{{explorer.rootObject.jar.hash}}</span></p>
         </div>
 
-        <div class="accordion" role="tablist">
+        <div class="accordion" role="tablist" v-if="explorer.state.updates.length > 0">
 
-          <b-card-text class="header-updates">Values fields</b-card-text>
+          <b-card-text class="header-updates">Value fields</b-card-text>
           <div
               v-for="(update, index) in getStorageValues"
               :key="index"
@@ -80,7 +82,7 @@
             </b-card>
           </div>
 
-          <b-card-text class="header-updates">Storage references fields</b-card-text>
+          <b-card-text class="header-updates">Storage reference fields</b-card-text>
           <div
               v-for="(update, index) in getStorageReferences"
               :key="index + getStorageValues.length"
@@ -119,7 +121,7 @@
                       </div>
 
                       <div class="d-block text-left">
-                        Address <code>{{update.value.reference.transaction.hash}}#{{parseInt(update.value.reference.progressive).toString(16)}}</code>
+                        Address <code class="storage-ref-code" @click="onAddressClick(update.value.reference)">{{update.value.reference.transaction.hash}}#{{parseInt(update.value.reference.progressive).toString(16)}}</code>
                       </div>
 
                       <div class="d-block text-left">
@@ -149,22 +151,24 @@ import {StateModel} from "hotweb3";
 export default {
   name: "Explorer",
   props: {
-    state: StateModel
+    explorer: {
+      state: StateModel,
+      addresses: [],
+      rootObject: null
+    }
+  },
+  methods: {
+    onAddressClick(objectAddress) {
+      const stringObjectAddress = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
+      this.$emit('onSearch', stringObjectAddress)
+    }
   },
   computed: {
-    getClassName() {
-      const classNames = this.state.updates.filter(update => update.className !== undefined && update.className !== null)
-      return classNames.length > 0 ? classNames[0].className : ''
-    },
-    getRootObject() {
-      const classNames = this.state.updates.filter(update => update.className !== undefined && update.className !== null)
-      return classNames.length > 0 ? classNames[0] : null
-    },
     getStorageValues() {
-      return this.state.updates.filter(update => update.value && update.value.type && update.value.type !== 'reference')
+      return this.explorer.state.updates.filter(update => update.value && update.value.type && update.value.type !== 'reference')
     },
     getStorageReferences() {
-      return this.state.updates.filter(update => update.value && update.value.type && update.value.type === 'reference')
+      return this.explorer.state.updates.filter(update => update.value && update.value.type && update.value.type === 'reference')
     }
   }
 }
@@ -190,4 +194,11 @@ export default {
   margin-top: 1rem !important;
 }
 
+.storage-ref-code {
+  cursor: pointer !important;
+  color: blue !important;
+}
+.breadcrumb {
+  background-color: unset !important;
+}
 </style>

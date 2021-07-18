@@ -10,7 +10,7 @@
 
     <div class="container">
       <Search @onSearch="onSearch"></Search>
-      <Explorer :state="state" ></Explorer>
+      <Explorer :explorer="explorer" @onSearch="onSearch"></Explorer>
     </div>
 
     <b-alert v-model="errorAlert.show" variant="danger" dismissible class="position-fixed error-alert ">
@@ -36,7 +36,11 @@ export default {
   },
   data() {
    return {
-     state: null,
+     explorer: {
+       state: null,
+       addresses: [],
+       rootObject: null
+     },
      showSpinner: false,
      errorAlert: {
        message: '',
@@ -45,6 +49,20 @@ export default {
    }
   },
   methods: {
+    getRootObjectFrom(state) {
+      const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
+      return rootObject.length > 0 ? rootObject[0] : null
+    },
+    buildBreadcrumbAddress(rootAddress) {
+      if (rootAddress) {
+        return {
+          text: rootAddress.object.transaction.hash + '#' + parseInt(rootAddress.object.progressive).toString(16),
+          active: true,
+          href: '#'
+        }
+      }
+      return null
+    },
     onSearch(objectAddress) {
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
       const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
@@ -53,7 +71,15 @@ export default {
       remoteNode.getState(new StorageReferenceModel(new TransactionReferenceModel('local', hash), progressive))
       .then(state => {
         this.showSpinner = false
-        this.state = state
+        this.explorer.rootObject = this.getRootObjectFrom(state)
+        const breadcrumbAddress = this.buildBreadcrumbAddress(this.explorer.rootObject)
+        if (breadcrumbAddress) {
+          if (this.explorer.addresses.length > 0) {
+            this.explorer.addresses[this.explorer.addresses.length - 1].active = false
+          }
+          this.explorer.addresses.push(breadcrumbAddress)
+        }
+        this.explorer.state = state
       }).catch(err => {
         this.onErrorHttpCall(err)
       })
