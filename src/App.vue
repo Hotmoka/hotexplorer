@@ -63,6 +63,12 @@ export default {
       }
       return null
     },
+    breadcrumbIndexOf(breadcrumb) {
+      return this.explorer.addresses.findIndex(address => address.text === breadcrumb.text)
+    },
+    setInactiveBreadcrumbs() {
+      this.explorer.addresses.forEach(address => address.active = false)
+    },
     onSearch(objectAddress) {
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
       const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
@@ -74,10 +80,13 @@ export default {
         this.explorer.rootObject = this.getRootObjectFrom(state)
         const breadcrumbAddress = this.buildBreadcrumbAddress(this.explorer.rootObject)
         if (breadcrumbAddress) {
-          if (this.explorer.addresses.length > 0) {
-            this.explorer.addresses[this.explorer.addresses.length - 1].active = false
+          this.setInactiveBreadcrumbs()
+          const index = this.breadcrumbIndexOf(breadcrumbAddress)
+          if (index === -1) {
+            this.explorer.addresses.push(breadcrumbAddress)
+          } else {
+            this.explorer.addresses[index].active = true
           }
-          this.explorer.addresses.push(breadcrumbAddress)
         }
         this.explorer.state = state
       }).catch(err => {

@@ -1,7 +1,7 @@
 <template>
   <div v-if="explorer.state" class="mg-t p-b">
 
-    <b-breadcrumb :items="explorer.addresses"></b-breadcrumb>
+    <b-breadcrumb :items="explorer.addresses" @click="onBreadcrumbclick"></b-breadcrumb>
     <b-card
         class="shadow-sm hot-card-header"
         header-bg-variant="primary"
@@ -120,7 +120,7 @@
                         Value
                       </div>
 
-                      <div class="d-block text-left">
+                      <div class="d-block text-left" v-if="update.value.reference">
                         Address <code class="storage-ref-code" @click="onAddressClick(update.value.reference)">{{update.value.reference.transaction.hash}}#{{parseInt(update.value.reference.progressive).toString(16)}}</code>
                       </div>
 
@@ -161,6 +161,9 @@ export default {
     onAddressClick(objectAddress) {
       const stringObjectAddress = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
       this.$emit('onSearch', stringObjectAddress)
+    },
+    onBreadcrumbclick(event) {
+      this.$emit('onSearch', event.target.text)
     }
   },
   computed: {
