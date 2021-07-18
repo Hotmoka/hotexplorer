@@ -1,7 +1,9 @@
 <template>
   <div class="margin-top-page">
     <b-card
-        title="Hotexplorer"
+        class="shadow-sm hot-card-header"
+        header-bg-variant="primary"
+        header="Hotexplorer"
     >
       <b-card-text>
         Navigate through blockchain objects
@@ -20,7 +22,7 @@
               required
           ></b-form-input>
 
-          <b-button variant="primary" type="submit">Search</b-button>
+          <b-button id="btn-search" variant="primary" type="submit">Search</b-button>
         </b-form>
 
       </b-card-body>
@@ -38,7 +40,7 @@ export default {
   },
   methods: {
     onSearchClick() {
-      this.$emit('onSearch', this.objectAddress)
+      this.$emit('onSearch', this.objectAddress.trim())
     }
   },
   computed: {
@@ -50,5 +52,16 @@ export default {
 </script>
 
 <style scoped>
+
+@media only screen and (max-width: 768px) {
+  /* For mobile phones: */
+  #input-object-address {
+    width: 100% !important;
+  }
+
+  #btn-search {
+    margin-top: 12px !important;
+  }
+}
 
 </style>
