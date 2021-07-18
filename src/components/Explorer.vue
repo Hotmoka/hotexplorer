@@ -10,9 +10,9 @@
       <template #header>
         <h6 class="mb-0" v-if="explorer.state.updates.length > 0">
           <b-badge variant="secondary" style="margin-right: 6px">
-          {{explorer.state.updates.length}}
+          {{explorer.state.updates.length - 1}}
           </b-badge>
-          <span class="highlighted">Updates of</span> <span class="highlighted">{{explorer.rootObject.className}}</span>
+          <span class="highlighted">Fields of</span> <span class="highlighted root-address-name">{{explorer.rootObject.className}}</span>
         </h6>
         <h6 class="mb-0" v-if="explorer.state.updates.length === 0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Updates</h6>
       </template>
@@ -189,9 +189,13 @@ export default {
 
 .storage-ref-code {
   cursor: pointer !important;
-  color: blue !important;
+  color: #0031ca !important;
 }
 .breadcrumb {
   background-color: unset !important;
+}
+
+.root-address-name {
+  color: #0031ca !important;
 }
 </style>
