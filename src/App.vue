@@ -9,8 +9,8 @@
     </b-navbar>
 
     <div class="container">
-      <Search @onSearch="onSearch"></Search>
-      <Explorer :explorer="explorer" @onSearch="onSearch"></Explorer>
+      <Search @onSearch="onSearchFromRoot"></Search>
+      <Explorer @onSearch="onSearch" :explorer="explorer"></Explorer>
     </div>
 
     <b-alert v-model="errorAlert.show" variant="danger" dismissible class="position-fixed error-alert ">
@@ -83,6 +83,13 @@ export default {
       }).catch(err => {
         this.onErrorHttpCall(err)
       })
+    },
+    onSearchFromRoot(objectAddress) {
+      this.explorer.state = null
+      this.explorer.addresses = []
+      this.explorer.rootObject = null
+
+      this.onSearch(objectAddress)
     },
     beforeHttpCall() {
       this.errorAlert.show = false
