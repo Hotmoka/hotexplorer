@@ -68,10 +68,11 @@ export default {
         return
       }
       this.closeModal()
-      // TODO
+      this.$emit('connectToToNode', this.url)
     },
     onPanareaHotmokaClick() {
-      // TODO
+      this.closeModal()
+      this.$emit('connectToToNode', 'http://panarea.hotmoka.io')
     }
   }
 }

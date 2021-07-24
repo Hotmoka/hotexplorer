@@ -5,10 +5,14 @@
     <b-navbar toggleable="lg" type="dark" variant="info" style="background-color: #fff !important;">
       <div class="container" style="height: 48px">
         <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
+
+        <b-button v-if="!connectedNode.isConnected" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
+        <b-button v-if="connectedNode.isConnected" variant="success">Connected to <span class="highlighted">{{ connectedNode.url }}</span></b-button>
       </div>
     </b-navbar>
 
     <div class="container-fluid">
+      <NodeConnection @connectToToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
@@ -31,20 +35,26 @@
 
 import Search from "@/components/Search";
 import Explorer from "@/components/Explorer";
-import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
 import Info from "@/components/Info";
+import NodeConnection from "@/components/NodeConnection";
+import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
 
-const remoteNode = new RemoteNode('http://panarea.hotmoka.io')
+let remoteNode = null
 
 export default {
   name: 'App',
   components: {
+    NodeConnection,
     Info,
     Search,
     Explorer
   },
   data() {
    return {
+     connectedNode: {
+       isConnected: false,
+       url: null
+     },
      explorer: {
        state: null,
        addresses: [],
@@ -135,10 +145,28 @@ export default {
       this.showSpinner = false
       this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
       this.errorAlert.show = true
+    },
+    onConnectToNodeClick() {
+      this.$refs.nodeConnectionModal.showModal()
+    },
+    connectToToNode(url) {
+      localStorage.setItem('node-url', url)
+      remoteNode = new RemoteNode(url)
+      this.afterNodeConnection(url)
+      this.getRemoteNodeInfo()
+    },
+    afterNodeConnection(url) {
+      this.connectedNode.url = url
+      this.connectedNode.isConnected = true
+      this.getRemoteNodeInfo()
     }
   },
   mounted() {
-    this.getRemoteNodeInfo()
+    const nodeUrl = localStorage.getItem('node-url')
+    if (nodeUrl !== null) {
+      remoteNode = new RemoteNode(nodeUrl)
+      this.afterNodeConnection(nodeUrl)
+    }
   }
 }
 </script>
