@@ -8,9 +8,16 @@
       </div>
     </b-navbar>
 
-    <div class="container">
+    <div class="container-fluid">
       <Search @onSearch="onSearchFromRoot"></Search>
-      <Explorer @onSearch="onSearch" :explorer="explorer"></Explorer>
+      <div class="row">
+        <div class="col-sm-12 col-md-3">
+          <Info id="hot-info" :nodeInfo="nodeInfo"></Info>
+        </div>
+        <div class="col-sm-12 col-md-9">
+          <Explorer id="hot-explorer" @onSearch="onSearch" :explorer="explorer"></Explorer>
+        </div>
+      </div>
     </div>
 
     <b-alert v-model="errorAlert.show" variant="danger" dismissible class="position-fixed error-alert ">
@@ -25,12 +32,14 @@
 import Search from "@/components/Search";
 import Explorer from "@/components/Explorer";
 import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
+import Info from "@/components/Info";
 
 const remoteNode = new RemoteNode('http://panarea.hotmoka.io')
 
 export default {
   name: 'App',
   components: {
+    Info,
     Search,
     Explorer
   },
@@ -41,6 +50,7 @@ export default {
        addresses: [],
        rootObject: null
      },
+     nodeInfo: null,
      showSpinner: false,
      errorAlert: {
        message: '',
@@ -102,9 +112,14 @@ export default {
           }
         }
         this.explorer.state = state
-      }).catch(err => {
-        this.onErrorHttpCall(err)
-      })
+      }).catch(this.onErrorHttpCall)
+    },
+    getRemoteNodeInfo() {
+      this.showSpinner = true
+      remoteNode.info().then(info => {
+        this.showSpinner = false
+        this.nodeInfo = info
+      }).catch(this.onErrorHttpCall)
     },
     onSearchFromRoot(objectAddress) {
       this.explorer.state = null
@@ -122,6 +137,9 @@ export default {
       this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
       this.errorAlert.show = true
     }
+  },
+  mounted() {
+    this.getRemoteNodeInfo()
   }
 }
 </script>
@@ -146,10 +164,36 @@ $theme-colors: (
   bottom: 0;
   right: 0;
   overflow: auto;
+  padding-bottom: 1.5rem;
+}
+
+code  {
+  word-break: break-word !important;
+}
+
+.breadcrumb span{
+  word-break: break-word !important;
+}
+
+#hot-info {
+  margin-top: 2rem;
+}
+
+#hot-explorer {
+  margin-top: 2rem;
 }
 
 .margin-top-page {
   margin-top: 3.5rem !important;
+}
+
+.highlighted {
+  font-weight: bold
+}
+
+.storage-ref-code {
+  cursor: pointer !important;
+  color: #0031ca !important;
 }
 
 .error-alert {
@@ -162,7 +206,6 @@ $theme-colors: (
   color: #fff !important;
   font-weight: bolder;
 }
-
 
 .loader {
   position: absolute !important;
