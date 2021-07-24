@@ -3,7 +3,7 @@
 
     <b-breadcrumb>
       <b-breadcrumb-item
-          active="false"
+          :active="true"
           href="#"
       >
         http://panarea.hotmoka.io

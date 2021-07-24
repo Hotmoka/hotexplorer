@@ -123,9 +123,8 @@ export default {
     },
     onSearchFromRoot(objectAddress) {
       this.explorer.state = null
-      this.explorer.addresses = []
+      this.explorer.addresses = [...this.explorer.addresses]
       this.explorer.rootObject = null
-
       this.onSearch(objectAddress)
     },
     beforeHttpCall() {
