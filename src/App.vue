@@ -12,7 +12,7 @@
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
-          <Info id="hot-info" :nodeInfo="nodeInfo"></Info>
+          <Info id="hot-info" @onSearch="onSearch" :nodeInfo="nodeInfo"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
           <Explorer id="hot-explorer" @onSearch="onSearch" :explorer="explorer"></Explorer>
