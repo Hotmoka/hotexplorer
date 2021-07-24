@@ -32,7 +32,6 @@
       </b-card>
       <!--end manifest -->
 
-
       <!-- manifest -->
       <b-card no-body class="mb-1 shadow-sm hot-card-header">
         <b-card-header header-tag="header" class="p-0" role="tab">

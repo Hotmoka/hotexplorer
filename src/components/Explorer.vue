@@ -5,7 +5,7 @@
       <b-breadcrumb-item
           v-for="(address,index) in explorer.addresses"
           :key="index"
-          active="address.active"
+          :active="address.active"
           @click="onBreadcrumbclick(address)"
           href="#">
         {{address.text}}
@@ -32,7 +32,6 @@
         <p v-if="explorer.state.updates.length === 0">Try with other object address</p>
 
         <div v-if="explorer.rootObject">
-
           <div v-if="getAddressOfRootObject" class="text-left">
             <b-card-text class="header-updates no-margin-t-b">Object address</b-card-text>
             <p style="margin-bottom: 16px">{{getAddressOfRootObject}}</p>
@@ -42,11 +41,12 @@
             <b-card-text class="header-updates no-margin-t-b">Jar address </b-card-text>
             <p style="margin-bottom: 0">{{explorer.rootObject.jar.hash}}</p>
           </div>
-
         </div>
+
 
         <div class="accordion" role="tablist" v-if="explorer.state.updates.length > 0">
 
+          <!-- value fields -->
           <b-card-text class="header-updates" v-if="getStorageValues.length > 0">Value fields</b-card-text>
           <div
               v-for="(update, index) in getStorageValues"
@@ -96,7 +96,9 @@
 
             </b-card>
           </div>
+          <!-- end value fields-->
 
+          <!-- reference fields -->
           <b-card-text class="header-updates" v-if="getStorageReferences.length > 0">Reference fields</b-card-text>
           <div
               v-for="(update, index) in getStorageReferences"
@@ -146,6 +148,7 @@
 
             </b-card>
           </div>
+          <!-- end reference fields -->
 
         </div>
       </b-card-body>
