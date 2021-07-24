@@ -1,12 +1,12 @@
 <template>
   <div v-if="nodeInfo">
 
-    <b-breadcrumb>
+    <b-breadcrumb v-if="nodeUrl">
       <b-breadcrumb-item
           :active="true"
           href="#"
       >
-        http://panarea.hotmoka.io
+        {{ nodeUrl }}
       </b-breadcrumb-item>
     </b-breadcrumb>
 
@@ -101,7 +101,8 @@ import {InfoModel} from "hotweb3";
 export default {
   name: "Info",
   props: {
-    nodeInfo: InfoModel
+    nodeInfo: InfoModel,
+    nodeUrl: null
   },
   methods: {
     onAddressClick(objectAddress) {

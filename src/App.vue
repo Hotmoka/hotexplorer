@@ -7,7 +7,7 @@
         <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
 
         <b-button v-if="!connectedNode.isConnected" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
-        <b-button v-if="connectedNode.isConnected" variant="success">Connected to <span class="highlighted">{{ connectedNode.url }}</span></b-button>
+        <span class="connected-badge badge badge-primary" v-if="connectedNode.isConnected">Connected to <span class="highlighted">{{ connectedNode.url }}</span></span>
       </div>
     </b-navbar>
 
@@ -16,7 +16,7 @@
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
-          <Info id="hot-info" @onSearch="onSearch" :nodeInfo="nodeInfo"></Info>
+          <Info id="hot-info" @onSearch="onSearch" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
           <Explorer id="hot-explorer" @onSearch="onSearch" :explorer="explorer"></Explorer>
@@ -100,7 +100,18 @@ export default {
       this.explorer.addresses.forEach(address => address.active = false)
     },
     onSearch(objectAddress) {
+      if (remoteNode === null) {
+        this.errorAlert = {
+          message: 'Not connected to remote node',
+          show: true
+        }
+        return
+      }
       if (!objectAddress) {
+        this.errorAlert = {
+          message: 'Invalid Object address',
+          show: true
+        }
         return
       }
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
@@ -153,7 +164,6 @@ export default {
       localStorage.setItem('node-url', url)
       remoteNode = new RemoteNode(url)
       this.afterNodeConnection(url)
-      this.getRemoteNodeInfo()
     },
     afterNodeConnection(url) {
       this.connectedNode.url = url
@@ -210,6 +220,21 @@ code  {
   margin-top: 2rem;
 }
 
+.connected-badge {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+}
 .margin-top-page {
   margin-top: 3.5rem !important;
 }
