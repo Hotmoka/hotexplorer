@@ -7,7 +7,10 @@
         <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
 
         <b-button v-if="!connectedNode.isConnected" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
-        <span class="connected-badge badge badge-primary" v-if="connectedNode.isConnected">Connected to <span class="highlighted">{{ connectedNode.url }}</span></span>
+        <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
+          <div class="d-none d-sm-block connected-badge badge badge-primary">Connected to <span class="highlighted">{{ connectedNode.url }}</span></div>
+          <b-icon class="exit-icon" variant="danger" icon="box-arrow-right" @click="onDisconnectNodeClick"></b-icon>
+        </div>
       </div>
     </b-navbar>
 
@@ -160,6 +163,14 @@ export default {
     onConnectToNodeClick() {
       this.$refs.nodeConnectionModal.showModal()
     },
+    onDisconnectNodeClick() {
+      localStorage.removeItem('node-url')
+      this.connectedNode = {
+        url: null,
+        isConnected: false
+      }
+      remoteNode = null
+    },
     connectToToNode(url) {
       localStorage.setItem('node-url', url)
       remoteNode = new RemoteNode(url)
@@ -235,6 +246,12 @@ code  {
   line-height: 1.5;
   border-radius: 0.25rem;
 }
+.exit-icon {
+  width: 32px; height: 32px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+
 .margin-top-page {
   margin-top: 3.5rem !important;
 }
