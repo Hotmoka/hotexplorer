@@ -1,16 +1,17 @@
 <template>
-  <div v-if="explorer.state" class="mg-t p-b">
+  <div v-if="explorer.state">
 
     <b-breadcrumb>
       <b-breadcrumb-item
           v-for="(address,index) in explorer.addresses"
           :key="index"
-          :active="address.active"
+          active="address.active"
           @click="onBreadcrumbclick(address)"
           href="#">
         {{address.text}}
       </b-breadcrumb-item>
     </b-breadcrumb>
+
     <b-card
         class="shadow-sm hot-card-header"
         header-bg-variant="primary"
@@ -21,7 +22,7 @@
           <b-badge variant="secondary" style="margin-right: 6px">
           {{explorer.state.updates.length - 1}}
           </b-badge>
-          <span class="highlighted">Fields of</span> <span class="highlighted root-address-name">{{explorer.rootObject.className}}</span>
+          <span class="highlighted">Storage fields of</span> <span class="highlighted root-address-name">{{explorer.rootObject.className}}</span>
         </h6>
         <h6 class="mb-0" v-if="explorer.state.updates.length === 0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Updates</h6>
       </template>
@@ -31,8 +32,17 @@
         <p v-if="explorer.state.updates.length === 0">Try with other object address</p>
 
         <div v-if="explorer.rootObject">
-          <p v-if="getAddressOfRootObject" style="margin-bottom: 0">Address <span class="highlighted light-black">{{getAddressOfRootObject}}</span></p>
-          <p v-if="explorer.rootObject.jar">from jar installed at <span class="highlighted light-black">{{explorer.rootObject.jar.hash}}</span></p>
+
+          <div v-if="getAddressOfRootObject" class="text-left">
+            <b-card-text class="header-updates no-margin-t-b">Object address</b-card-text>
+            <p style="margin-bottom: 16px">{{getAddressOfRootObject}}</p>
+          </div>
+
+          <div v-if="explorer.rootObject.jar" class="text-left">
+            <b-card-text class="header-updates no-margin-t-b">Jar address </b-card-text>
+            <p style="margin-bottom: 0">{{explorer.rootObject.jar.hash}}</p>
+          </div>
+
         </div>
 
         <div class="accordion" role="tablist" v-if="explorer.state.updates.length > 0">
@@ -43,13 +53,13 @@
               :key="index"
           >
             <b-card no-body class="mb-1" v-if="update.field && update.field.name">
-              <b-card-header header-tag="header" class="p-1" role="tab">
+              <b-card-header header-tag="header" class="p-0" role="tab">
                 <b-button block v-b-toggle="'collapsed-value-' + index" variant="light" class="highlighted">
                   {{update.field.name}}:<code>{{update.field.type}} = {{update.value.value}}</code>
                 </b-button>
               </b-card-header>
 
-              <b-collapse :id="'collapsed-value-' + index" accordion="my-accordion" role="tabpanel" v-if="update.field && update.field.type">
+              <b-collapse :id="'collapsed-value-' + index" accordion="accordion-values" role="tabpanel" v-if="update.field && update.field.type">
                 <b-card-body class="text-center">
 
                   <div class="row">
@@ -87,19 +97,19 @@
             </b-card>
           </div>
 
-          <b-card-text class="header-updates" v-if="getStorageReferences.length > 0">Storage reference fields</b-card-text>
+          <b-card-text class="header-updates" v-if="getStorageReferences.length > 0">Reference fields</b-card-text>
           <div
               v-for="(update, index) in getStorageReferences"
               :key="index + getStorageValues.length"
           >
             <b-card no-body class="mb-1" v-if="update.field && update.field.name">
-              <b-card-header header-tag="header" class="p-1" role="tab">
+              <b-card-header header-tag="header" class="p-0" role="tab">
                 <b-button block v-b-toggle="'collapsed-reference-' + index + getStorageValues.length" variant="light" class="highlighted">
                   {{update.field.name}}:<code>{{update.field.type}}</code>
                 </b-button>
               </b-card-header>
 
-              <b-collapse :id="'collapsed-reference-' + index + getStorageValues.length" accordion="my-accordion" role="tabpanel" v-if="update.field && update.field.type">
+              <b-collapse :id="'collapsed-reference-' + index + getStorageValues.length" accordion="accordion-references" role="tabpanel" v-if="update.field && update.field.type">
                 <b-card-body class="text-center">
 
                   <div class="row">
@@ -184,17 +194,6 @@ export default {
 </script>
 
 <style scoped>
-.mg-t {
-  margin-top: 2rem;
-}
-
-.p-b {
-  padding-bottom: 2rem;
-}
-
-.highlighted {
-  font-weight: bold
-}
 
 .header-updates {
   text-align: left !important;
@@ -203,18 +202,20 @@ export default {
   margin-top: 1rem !important;
 }
 
-.storage-ref-code {
-  cursor: pointer !important;
-  color: #0031ca !important;
-}
 .breadcrumb {
   background-color: unset !important;
 }
 
 .root-address-name {
-  color: #0031ca !important;
+  color: #311b92  !important;
 }
-.light-black {
-  color: rgba(0,0,0,.65) !important;
+
+.no-margin-t-b {
+  margin-top: 0!important;
+  margin-bottom: 0!important;
+}
+
+.card-body {
+  padding: 0.75rem !important;
 }
 </style>
