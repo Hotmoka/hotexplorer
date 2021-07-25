@@ -6,7 +6,7 @@
       <div class="container" style="height: 48px">
         <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
 
-        <b-button v-if="!connectedNode.isConnected" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
+        <b-button v-if="!connectedNode.isConnected && !connectedNode.connecting" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
         <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
           <div class="d-none d-sm-block connected-badge badge badge-primary">Connected to <span class="highlighted">{{ connectedNode.url }}</span></div>
           <b-icon class="exit-icon" variant="danger" icon="box-arrow-right" @click="onDisconnectNodeClick"></b-icon>
@@ -15,7 +15,7 @@
     </b-navbar>
 
     <div class="container-fluid">
-      <NodeConnection @connectToToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
+      <NodeConnection @onConnectToNode="onConnectToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
@@ -55,6 +55,7 @@ export default {
   data() {
    return {
      connectedNode: {
+       connecting: false,
        isConnected: false,
        url: null
      },
@@ -136,14 +137,27 @@ export default {
           }
         }
         this.explorer.state = state
-      }).catch(this.onErrorHttpCall)
+      }).catch(err => {
+        this.showSpinner = false
+        this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
+        this.errorAlert.show = true
+      })
     },
     getRemoteNodeInfo() {
       this.showSpinner = true
       remoteNode.info().then(info => {
+        this.connectedNode.connecting = false
+        this.connectedNode.isConnected = true
         this.showSpinner = false
         this.nodeInfo = info
-      }).catch(this.onErrorHttpCall)
+      }).catch(() => {
+        this.showSpinner = false
+        this.connectedNode.connecting = false
+        this.errorAlert = {
+          message: 'Error while connecting to node',
+          show: true
+        }
+      })
     },
     onSearchFromRoot(objectAddress) {
       this.explorer.state = null
@@ -155,11 +169,6 @@ export default {
       this.errorAlert.show = false
       this.showSpinner = true
     },
-    onErrorHttpCall(err) {
-      this.showSpinner = false
-      this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
-      this.errorAlert.show = true
-    },
     onConnectToNodeClick() {
       this.$refs.nodeConnectionModal.showModal()
     },
@@ -167,26 +176,36 @@ export default {
       localStorage.removeItem('node-url')
       this.connectedNode = {
         url: null,
-        isConnected: false
+        isConnected: false,
+        connecting: false
+      }
+      this.explorer = {
+        state: null,
+        addresses: [],
+        rootObject: null
+      }
+      this.nodeInfo = null
+      this.errorAlert = {
+        message: '',
+        show: false
       }
       remoteNode = null
     },
-    connectToToNode(url) {
+    onConnectToNode(url) {
       localStorage.setItem('node-url', url)
-      remoteNode = new RemoteNode(url)
-      this.afterNodeConnection(url)
+      this.connectToToNode(url)
     },
-    afterNodeConnection(url) {
+    connectToToNode(url) {
+      remoteNode = new RemoteNode(url)
+      this.connectedNode.connecting = true
       this.connectedNode.url = url
-      this.connectedNode.isConnected = true
       this.getRemoteNodeInfo()
     }
   },
   mounted() {
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
-      remoteNode = new RemoteNode(nodeUrl)
-      this.afterNodeConnection(nodeUrl)
+      this.connectToToNode(nodeUrl)
     }
   }
 }
