@@ -11,7 +11,7 @@
           <div class="d-none d-sm-block connected-badge badge badge-success">
             <b-icon icon="globe"></b-icon> <span class="highlighted">{{ connectedNode.url }}</span>
           </div>
-          <b-icon class="exit-icon" variant="danger" icon="box-arrow-right" @click="onDisconnectNodeClick"></b-icon>
+          <b-icon class="exit-icon" variant="danger" icon="power" @click="onDisconnectNodeClick"></b-icon>
         </div>
       </div>
     </b-navbar>
@@ -80,6 +80,14 @@ export default {
    }
   },
   methods: {
+    showToast(title, message) {
+      this.$bvToast.toast(message, {
+        title: title,
+        variant: 'success',
+        solid: true,
+        toaster: 'b-toaster-top-right'
+      })
+    },
     getRootObjectFrom(state) {
       const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
       return rootObject.length > 0 ? rootObject[0] : null
@@ -197,6 +205,7 @@ export default {
         show: false
       }
       remoteNode = null
+      this.showToast('Remote node', 'Disconnected successfully from remote node')
     },
     onConnectToNode(url) {
       localStorage.setItem('node-url', url)
