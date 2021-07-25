@@ -8,13 +8,20 @@
 
         <b-button v-if="!connectedNode.isConnected && !connectedNode.connecting" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
         <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
-          <div class="d-none d-sm-block connected-badge badge badge-primary">Connected to <span class="highlighted">{{ connectedNode.url }}</span></div>
+          <div class="d-none d-sm-block connected-badge badge badge-success">
+            <b-icon icon="globe"></b-icon> <span class="highlighted">{{ connectedNode.url }}</span>
+          </div>
           <b-icon class="exit-icon" variant="danger" icon="box-arrow-right" @click="onDisconnectNodeClick"></b-icon>
         </div>
       </div>
     </b-navbar>
 
     <div class="container-fluid">
+
+      <div class="d-sm-none connected-badge badge badge-success mobile-node-url" v-if="connectedNode.isConnected">
+        <b-icon icon="globe"></b-icon> <span class="highlighted">{{ connectedNode.url }}</span>
+      </div>
+
       <NodeConnection @onConnectToNode="onConnectToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
@@ -265,6 +272,12 @@ code  {
   line-height: 1.5;
   border-radius: 0.25rem;
 }
+
+.mobile-node-url {
+  width: 100%;
+  margin-bottom: -3rem;
+}
+
 .exit-icon {
   width: 32px; height: 32px;
   margin-left: 12px;
