@@ -9,7 +9,7 @@
         <b-button v-if="!connectedNode.isConnected && !connectedNode.connecting" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
         <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
           <div class="d-none d-sm-block connected-badge badge badge-success">
-            <b-icon icon="globe"></b-icon> <span class="highlighted">{{ connectedNode.url }}</span>
+            <b-icon icon="globe"></b-icon> <span class="highlighted">{{ getRemoteNodeUrl }}</span>
           </div>
           <b-icon class="exit-icon" variant="danger" icon="power" @click="onDisconnectNodeClick"></b-icon>
         </div>
@@ -19,7 +19,7 @@
     <div class="container-fluid">
 
       <div class="d-sm-none connected-badge badge badge-success mobile-node-url" v-if="connectedNode.isConnected">
-        <b-icon icon="globe"></b-icon> <span class="highlighted">{{ connectedNode.url }}</span>
+        <b-icon icon="globe"></b-icon> <span class="highlighted">{{ getRemoteNodeUrl }}</span>
       </div>
 
       <NodeConnection @onConnectToNode="onConnectToNode" ref="nodeConnectionModal"></NodeConnection>
@@ -76,8 +76,14 @@ export default {
      errorAlert: {
        message: '',
        show: false
-     }
+     },
+     isDev: false
    }
+  },
+  computed: {
+    getRemoteNodeUrl() {
+      return this.isDev && this.connectedNode.url === '' ? 'localhost' : this.connectedNode.url
+    }
   },
   methods: {
     showToast(title, message) {
@@ -222,6 +228,11 @@ export default {
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
       this.connectToToNode(nodeUrl)
+    }
+  },
+  created() {
+    if (location.host.indexOf("localhost") !== -1) {
+      this.isDev = true
     }
   }
 }

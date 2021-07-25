@@ -26,6 +26,8 @@
               required
           ></b-form-input>
         </b-form-group>
+        <div v-if="isDev"><b-icon variant="secondary" icon="exclamation-circle-fill"></b-icon>
+          <span style="font-size: 14px"> Pass local to connect to a local node (the url must be configured in vue.config.js as a proxy)</span></div>
       </form>
     </b-modal>
   </div>
@@ -39,7 +41,8 @@ export default {
       show: false,
       url: '',
       urlState: null,
-      submittedNames: []
+      submittedNames: [],
+      isDev: false
     }
   },
   methods: {
@@ -67,12 +70,18 @@ export default {
       if (!this.checkFormValidity()) {
         return
       }
+      const remoteNodeUrl = this.isDev && this.url.trim() === 'local' ? '' : this.url.trim()
       this.closeModal()
-      this.$emit('onConnectToNode', this.url)
+      this.$emit('onConnectToNode', remoteNodeUrl)
     },
     onPanareaHotmokaClick() {
       this.closeModal()
       this.$emit('onConnectToNode', 'http://panarea.hotmoka.io')
+    }
+  },
+  created() {
+    if (location.host.indexOf("localhost") !== -1) {
+      this.isDev = true
     }
   }
 }
