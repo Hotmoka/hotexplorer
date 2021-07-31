@@ -124,6 +124,10 @@ export default {
     setInactiveBreadcrumbs() {
       this.explorer.addresses.forEach(address => address.active = false)
     },
+    /**
+     * It retrieves the state of an object.
+     * @param objectAddress the address of the object
+     */
     onSearch(objectAddress) {
       if (remoteNode === null) {
         this.errorAlert = {
@@ -164,13 +168,21 @@ export default {
         this.errorAlert.show = true
       })
     },
-    getRemoteNodeInfo() {
+    /**
+     * Retrieves the info of the remote node.
+     * @callback an optional callback to be invoked after a successful response
+     */
+    getRemoteNodeInfo(callback) {
       this.showSpinner = true
       remoteNode.info().then(info => {
         this.connectedNode.connecting = false
         this.connectedNode.isConnected = true
         this.showSpinner = false
         this.nodeInfo = info
+
+        if (callback) {
+          callback()
+        }
       }).catch(() => {
         this.showSpinner = false
         this.connectedNode.connecting = false
@@ -217,17 +229,32 @@ export default {
       localStorage.setItem('node-url', url)
       this.connectToToNode(url)
     },
-    connectToToNode(url) {
+    /**
+     * Connects to a remote node and retrieves the info of the node.
+     * @param url the url
+     * @param callback an optional callback to be invoked
+     */
+    connectToToNode(url, callback) {
       remoteNode = new RemoteNode(url)
       this.connectedNode.connecting = true
       this.connectedNode.url = url
-      this.getRemoteNodeInfo()
+      this.getRemoteNodeInfo(callback)
     }
   },
   mounted() {
+    let searchAddressCallback = undefined
+
+    // check for address in url
+    if (this.$route && this.$route.params && this.$route.params.address) {
+      searchAddressCallback = () => this.onSearchFromRoot(this.$route.fullPath.replace("/", ""))
+    }
+
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
-      this.connectToToNode(nodeUrl)
+      this.connectToToNode(nodeUrl, searchAddressCallback)
+    } else if (searchAddressCallback) {
+      // by default we connect to panearea.hotmoka.io
+      this.connectToToNode('http://panarea.hotmoka.io', searchAddressCallback)
     }
   },
   created() {
