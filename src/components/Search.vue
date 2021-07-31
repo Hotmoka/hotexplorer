@@ -20,9 +20,10 @@
               :state="isFormValid"
               style="width: 60%"
               required
+              trim
           ></b-form-input>
 
-          <b-button id="btn-search" variant="primary" type="submit">Search</b-button>
+          <b-button id="btn-search" variant="primary" type="submit" :disabled="!isFormValid">Search</b-button>
         </b-form>
 
       </b-card-body>
@@ -40,12 +41,12 @@ export default {
   },
   methods: {
     onSearchClick() {
-      this.$emit('onSearch', this.objectAddress.trim())
+      this.$emit('onSearch', this.objectAddress)
     }
   },
   computed: {
     isFormValid() {
-      return this.objectAddress !== null && this.objectAddress === '' ? false : null
+      return this.objectAddress === null ? null : this.objectAddress.length > 0;
     }
   }
 }
