@@ -6,7 +6,7 @@
           :active="true"
           href="#"
       >
-        {{ nodeUrl }}
+        Node {{ nodeUrl }}
       </b-breadcrumb-item>
     </b-breadcrumb>
 

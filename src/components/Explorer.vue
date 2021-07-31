@@ -74,7 +74,7 @@
                       </div>
 
                       <div class="d-block text-left">
-                        Defining class <code>{{update.field.definingClass}}</code>
+                        {{explorer.rootObject.className === update.field.definingClass ? 'Defining class' : 'Inherited from'}} <code>{{update.field.definingClass}}</code>
                       </div>
                     </div>
 
@@ -126,7 +126,7 @@
                       </div>
 
                       <div class="d-block text-left">
-                        Defining class <code>{{update.field.definingClass}}</code>
+                        {{explorer.rootObject.className === update.field.definingClass ? 'Defining class' : 'Inherited from'}} <code>{{update.field.definingClass}}</code>
                       </div>
                     </div>
 
