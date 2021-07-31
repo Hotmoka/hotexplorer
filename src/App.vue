@@ -4,7 +4,7 @@
 
     <b-navbar toggleable="lg" type="dark" variant="info" style="background-color: #fff !important;">
       <div class="container" style="height: 48px">
-        <img alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48">
+        <img id="hotmoka-logo" alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48" @click="goHome">
 
         <b-button v-if="!connectedNode.isConnected && !connectedNode.connecting" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
         <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
@@ -86,6 +86,12 @@ export default {
     }
   },
   methods: {
+    goHome() {
+      if (this.$route.path !== '/') {
+        this.$router.replace({ path: '/' });
+      }
+      this.$router.go()
+    },
     showToast(title, message) {
       this.$bvToast.toast(message, {
         title: title,
@@ -286,6 +292,10 @@ $theme-colors: (
   right: 0;
   overflow: auto;
   padding-bottom: 1.5rem;
+}
+
+#hotmoka-logo {
+  cursor: pointer;
 }
 
 code  {
