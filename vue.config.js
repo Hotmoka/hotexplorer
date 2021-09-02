@@ -1,4 +1,5 @@
 module.exports = {
+    publicPath: process.env.NODE_ENV === 'production' ? '/hotexplorer' : '/',
     devServer: {
         // local blockchain node
         proxy: {
