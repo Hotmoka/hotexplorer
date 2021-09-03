@@ -22,7 +22,7 @@
         <b-icon icon="globe"></b-icon> <span class="highlighted">{{ getRemoteNodeUrl }}</span>
       </div>
 
-      <NodeConnection @onConnectToNode="onConnectToNode" ref="nodeConnectionModal"></NodeConnection>
+      <NodeConnection @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="onSearchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
@@ -231,16 +231,13 @@ export default {
       remoteNode = null
       this.showToast('Remote node', 'Disconnected successfully from remote node')
     },
-    onConnectToNode(url) {
-      localStorage.setItem('node-url', url)
-      this.connectToToNode(url)
-    },
     /**
      * Connects to a remote node and retrieves the info of the node.
      * @param url the url
      * @param callback an optional callback to be invoked
      */
     connectToToNode(url, callback) {
+      localStorage.setItem('node-url', url)
       remoteNode = new RemoteNode(url)
       this.connectedNode.connecting = true
       this.connectedNode.url = url

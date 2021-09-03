@@ -11,7 +11,7 @@
         @ok="handleOk"
     >
 
-      <button @click="onPanareaHotmokaClick" type="button" class="mb-3 btn btn-info" style="width: 100%">Connect to <span class="highlighted">panarea.hotmoka.io</span></button>
+      <button @click="onPanareaHotmokaClick" type="button" class="mb-3 btn btn-info" style="width: 100%">Connect to <span class="highlighted">http://panarea.hotmoka.io</span></button>
       <p class="text-center">or to a custom node</p>
       <form ref="form" @submit.stop.prevent="handleSubmit">
         <b-form-group
@@ -20,7 +20,7 @@
         >
           <b-form-input
               id="url-input"
-              placeholder="Node url"
+              placeholder="Node url (with protocol)"
               v-model="url"
               :state="urlState"
               required
