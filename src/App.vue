@@ -251,8 +251,8 @@ export default {
     let searchAddressCallback = undefined
 
     // check for address in url
-    if (this.$route && this.$route.params && this.$route.params.address) {
-      const objectAddress = this.$route.params.address + (this.$route.hash ? this.$route.hash : '')
+    if (this.$route && this.$route.query && this.$route.query.address) {
+      const objectAddress = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
       searchAddressCallback = () => this.onSearchFromRoot(objectAddress)
     }
 
