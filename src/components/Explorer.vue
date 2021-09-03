@@ -1,16 +1,26 @@
 <template>
   <div v-if="explorer.state">
 
-    <b-breadcrumb>
-      <b-breadcrumb-item
-          v-for="(address,index) in explorer.addresses"
-          :key="index"
-          :active="address.active"
-          @click="onBreadcrumbclick(address)"
-          href="#">
-        {{address.text}}
-      </b-breadcrumb-item>
-    </b-breadcrumb>
+    <div class="row">
+      <div class="col-md-11 col-sm-12">
+
+        <b-breadcrumb>
+          <b-breadcrumb-item
+              v-for="(address,index) in explorer.addresses"
+              :key="index"
+              :active="address.active"
+              :class="address.active ? 'h-breadcrumb-active' : 'h-breadcrumb-not-active '"
+              @click="onBreadcrumbclick(address)"
+              href="#">
+            {{ address.text }}
+          </b-breadcrumb-item>
+        </b-breadcrumb>
+      </div>
+
+      <div class="col-md-1 col-sm-12">
+        <b-badge class="h-badge" variant="secondary" @click="onClearClick">Clear</b-badge>
+      </div>
+    </div>
 
     <b-card
         class="shadow-sm hot-card-header"
@@ -177,6 +187,9 @@ export default {
     },
     onBreadcrumbclick(address) {
       this.$emit('onSearch', address.id)
+    },
+    onClearClick() {
+      this.$emit('onClearAddresses')
     }
   },
   computed: {
@@ -196,17 +209,13 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 .header-updates {
   text-align: left !important;
   color: rgba(0,0,0,.65) !important;
   font-weight: bold;
   margin-top: 1rem !important;
-}
-
-.breadcrumb {
-  background-color: unset !important;
 }
 
 .root-address-name {
@@ -221,4 +230,17 @@ export default {
 .card-body {
   padding: 0.75rem !important;
 }
+
+.h-badge {
+  padding: 6px;
+  cursor: pointer;
+}
+
+
+@media only screen and (max-width: 768px) {
+  .h-badge {
+    margin-bottom: 12px !important;
+  }
+}
+
 </style>

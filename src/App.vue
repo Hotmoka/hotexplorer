@@ -29,7 +29,7 @@
           <Info id="hot-info" @onSearch="onSearch" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
-          <Explorer id="hot-explorer" @onSearch="onSearch" :explorer="explorer"></Explorer>
+          <Explorer id="hot-explorer" @onSearch="onSearch" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
         </div>
       </div>
     </div>
@@ -129,6 +129,9 @@ export default {
     },
     setInactiveBreadcrumbs() {
       this.explorer.addresses.forEach(address => address.active = false)
+    },
+    clearAddresses() {
+      this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
     },
     /**
      * It retrieves the state of an object.
@@ -296,12 +299,20 @@ $theme-colors: (
   cursor: pointer;
 }
 
-code  {
+code, .breadcrumb span, .breadcrumb a {
   word-break: break-word !important;
 }
 
-.breadcrumb span{
-  word-break: break-word !important;
+.breadcrumb {
+  background-color: unset !important;
+}
+
+.h-breadcrumb-active {
+  color: theme-color('primary') !important;
+}
+
+.h-breadcrumb-not-active a {
+  color: #6c757d !important;
 }
 
 #hot-info {

@@ -114,9 +114,6 @@ export default {
 </script>
 
 <style scoped>
-.breadcrumb {
-  background-color: unset !important;
-}
 
 .section-info {
   padding: 0 0.75rem 0 0.75rem;
