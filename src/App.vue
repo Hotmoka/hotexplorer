@@ -87,8 +87,8 @@ export default {
   },
   methods: {
     goHome() {
-      if (this.$route.path !== '/') {
-        this.$router.replace({ path: '/' });
+      if (this.$route.path !== '/hotexplorer') {
+        this.$router.replace({ path: '/hotexplorer' });
       }
       this.$router.go()
     },
@@ -249,7 +249,7 @@ export default {
   },
   mounted() {
     let searchAddressCallback = undefined
-
+    console.log(this.$route)
     // check for address in url
     if (this.$route && this.$route.params && this.$route.params.address) {
       const objectAddress = this.$route.params.address + (this.$route.hash ? this.$route.hash : '')

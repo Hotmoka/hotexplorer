@@ -14,9 +14,9 @@ Vue.config.productionTip = false
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/', component: App },
-    { path: '/:address', component: App },
-    { path: '*', redirect: '/' }
+    { path: '/hotexplorer', component: App },
+    { path: '/hotexplorer/:address', component: App },
+    { path: '*', redirect: '/hotexplorer' }
   ]
 })
 
