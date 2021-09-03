@@ -252,14 +252,15 @@ export default {
 
     // check for address in url
     if (this.$route && this.$route.params && this.$route.params.address) {
-      searchAddressCallback = () => this.onSearchFromRoot(this.$route.fullPath.replace("/", ""))
+      const objectAddress = this.$route.params.address + (this.$route.hash ? this.$route.hash : '')
+      searchAddressCallback = () => this.onSearchFromRoot(objectAddress)
     }
 
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
       this.connectToToNode(nodeUrl, searchAddressCallback)
     } else if (searchAddressCallback) {
-      // by default we connect to panearea.hotmoka.io
+      // by default we connect to panarea.hotmoka.io
       this.connectToToNode('http://panarea.hotmoka.io', searchAddressCallback)
     }
   },
