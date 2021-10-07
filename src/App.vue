@@ -48,6 +48,7 @@ import Explorer from "@/components/Explorer";
 import Info from "@/components/Info";
 import NodeConnection from "@/components/NodeConnection";
 import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
+import {buildBreadcrumbAddress, EventBus, showSuccessToast, WrapPromiseTask} from "@/internal/utils";
 
 let remoteNode = null
 
@@ -86,43 +87,27 @@ export default {
     }
   },
   methods: {
+    showErrorAlert(message) {
+      this.errorAlert = {
+        message: message,
+        show: true
+      }
+    },
+    dismissErrorAlert() {
+      this.errorAlert = {
+        show: false,
+        message: ''
+      }
+    },
     goHome() {
       if (this.$route.path !== '/') {
         this.$router.replace({ path: '/' });
       }
       this.$router.go()
     },
-    showToast(title, message) {
-      this.$bvToast.toast(message, {
-        title: title,
-        variant: 'success',
-        solid: true,
-        toaster: 'b-toaster-top-right'
-      })
-    },
     getRootObjectFrom(state) {
       const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
       return rootObject.length > 0 ? rootObject[0] : null
-    },
-    buildBreadcrumbAddress(rootAddress) {
-      if (rootAddress) {
-        let className = ''
-        if (rootAddress.className && rootAddress.className.length > 0) {
-          if (rootAddress.className.indexOf('.') !== -1) {
-            className += ' (' + rootAddress.className.substring(rootAddress.className.lastIndexOf('.') + 1, rootAddress.className.length) + ')'
-          } else {
-            className += ' (' + rootAddress.className + ')'
-          }
-        }
-        const address = rootAddress.object.transaction.hash + '#' + parseInt(rootAddress.object.progressive).toString(16)
-        return {
-          text: address + className,
-          active: true,
-          href: '#',
-          id: address
-        }
-      }
-      return null
     },
     breadcrumbIndexOf(breadcrumb) {
       return this.explorer.addresses.findIndex(address => address.id === breadcrumb.id)
@@ -155,51 +140,44 @@ export default {
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
       const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
-      this.beforeHttpCall()
-      remoteNode.getState(new StorageReferenceModel(new TransactionReferenceModel('local', hash), progressive))
-      .then(state => {
-        this.showSpinner = false
-        this.explorer.rootObject = this.getRootObjectFrom(state)
-        const breadcrumbAddress = this.buildBreadcrumbAddress(this.explorer.rootObject)
-        if (breadcrumbAddress) {
-          this.setInactiveBreadcrumbs()
-          const index = this.breadcrumbIndexOf(breadcrumbAddress)
-          if (index === -1) {
-            this.explorer.addresses.push(breadcrumbAddress)
-          } else {
-            this.explorer.addresses[index].active = true
+      this.dismissErrorAlert()
+      WrapPromiseTask(() => remoteNode.getState(new StorageReferenceModel(new TransactionReferenceModel('local', hash), progressive)))
+        .then(state => {
+          this.explorer.rootObject = this.getRootObjectFrom(state)
+          const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
+          if (breadcrumbAddress) {
+            this.setInactiveBreadcrumbs()
+            const index = this.breadcrumbIndexOf(breadcrumbAddress)
+            if (index === -1) {
+              this.explorer.addresses.push(breadcrumbAddress)
+            } else {
+              this.explorer.addresses[index].active = true
+            }
           }
-        }
-        this.explorer.state = state
-      }).catch(err => {
-        this.showSpinner = false
-        this.errorAlert.message = err.message ?? 'Error while fetching object\'s state'
-        this.errorAlert.show = true
-      })
+          this.explorer.state = state
+        })
+        .catch(err => this.showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
      * Retrieves the info of the remote node.
      * @callback an optional callback to be invoked after a successful response
      */
     getRemoteNodeInfo(callback) {
-      this.showSpinner = true
-      remoteNode.info().then(info => {
-        this.connectedNode.connecting = false
-        this.connectedNode.isConnected = true
-        this.showSpinner = false
-        this.nodeInfo = info
+      this.dismissErrorAlert()
+      WrapPromiseTask(() => remoteNode.info())
+        .then(info => {
+          this.connectedNode.connecting = false
+          this.connectedNode.isConnected = true
+          this.nodeInfo = info
 
-        if (callback) {
-          callback()
-        }
-      }).catch(() => {
-        this.showSpinner = false
-        this.connectedNode.connecting = false
-        this.errorAlert = {
-          message: 'Error while connecting to node',
-          show: true
-        }
-      })
+          if (callback) {
+            callback()
+          }
+        })
+        .catch(() => {
+          this.connectedNode.connecting = false
+          this.showErrorAlert('Cannot get node information')
+        })
     },
     onSearchFromRoot(objectAddress) {
       this.explorer.state = null
@@ -207,13 +185,12 @@ export default {
       this.explorer.rootObject = null
       this.onSearch(objectAddress)
     },
-    beforeHttpCall() {
-      this.errorAlert.show = false
-      this.showSpinner = true
-    },
     onConnectToNodeClick() {
       this.$refs.nodeConnectionModal.showModal()
     },
+    /**
+     * It disconnects from the remote node.
+     */
     onDisconnectNodeClick() {
       localStorage.removeItem('node-url')
       this.connectedNode = {
@@ -227,12 +204,10 @@ export default {
         rootObject: null
       }
       this.nodeInfo = null
-      this.errorAlert = {
-        message: '',
-        show: false
-      }
+      this.dismissErrorAlert()
       remoteNode = null
-      this.showToast('Remote node', 'Disconnected successfully from remote node')
+
+      showSuccessToast(this, 'Remote node', 'Disconnected successfully from remote node')
     },
     /**
      * Connects to a remote node and retrieves the info of the node.
@@ -247,7 +222,13 @@ export default {
       this.getRemoteNodeInfo(callback)
     }
   },
-  mounted() {
+  created() {
+    EventBus.$on('showSpinner', showSpinner => this.showSpinner = showSpinner)
+
+    if (location.host.indexOf("localhost") !== -1) {
+      this.isDev = true
+    }
+
     let searchAddressCallback = undefined
 
     // check for address in url
@@ -256,17 +237,13 @@ export default {
       searchAddressCallback = () => this.onSearchFromRoot(objectAddress)
     }
 
+    // connect to remote node
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
       this.connectToToNode(nodeUrl, searchAddressCallback)
     } else if (searchAddressCallback) {
       // by default we connect to panarea.hotmoka.io
       this.connectToToNode('http://panarea.hotmoka.io', searchAddressCallback)
-    }
-  },
-  created() {
-    if (location.host.indexOf("localhost") !== -1) {
-      this.isDev = true
     }
   }
 }
