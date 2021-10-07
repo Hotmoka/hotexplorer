@@ -19,7 +19,7 @@
       <Search @onSearch="searchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
-          <Info id="hot-info" @onSearch="searchByAddress" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
+          <Info id="hot-info" @onAddressSearch="searchByAddress" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
           <Explorer id="hot-explorer" @onSearch="searchByAddress" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>

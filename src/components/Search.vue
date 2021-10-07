@@ -55,7 +55,7 @@ export default {
 <style scoped>
 
 @media only screen and (max-width: 768px) {
-  /* For mobile phones: */
+
   #input-object-address {
     width: 100% !important;
   }

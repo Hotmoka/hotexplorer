@@ -10,7 +10,7 @@
               :key="index"
               :active="address.active"
               :class="address.active ? 'h-breadcrumb-active' : 'h-breadcrumb-not-active '"
-              @click="onBreadcrumbclick(address)"
+              @click="onBreadcrumbClick(address)"
               href="#">
             {{ address.text }}
           </b-breadcrumb-item>
@@ -182,10 +182,10 @@ export default {
   },
   methods: {
     onAddressClick(objectAddress) {
-      const stringObjectAddress = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
-      this.$emit('onSearch', stringObjectAddress)
+      const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
+      this.$emit('onSearch', address)
     },
-    onBreadcrumbclick(address) {
+    onBreadcrumbClick(address) {
       this.$emit('onSearch', address.id)
     },
     onClearClick() {

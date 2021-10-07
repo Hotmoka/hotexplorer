@@ -106,8 +106,8 @@ export default {
   },
   methods: {
     onAddressClick(objectAddress) {
-      const stringObjectAddress = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
-      this.$emit('onSearch', stringObjectAddress)
+      const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
+      this.$emit('onAddressSearch', address)
     }
   }
 }
