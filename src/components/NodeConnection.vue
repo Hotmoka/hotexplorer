@@ -1,5 +1,4 @@
 <template >
-
   <div v-if="show">
     <b-modal
         id="modal-prevent-closing"
@@ -12,23 +11,27 @@
     >
 
       <button @click="onPanareaHotmokaClick" type="button" class="mb-3 btn btn-info" style="width: 100%">Connect to <span class="highlighted">http://panarea.hotmoka.io</span></button>
+
       <p class="text-center">or to a custom node</p>
-      <form ref="form" @submit.stop.prevent="handleSubmit">
-        <b-form-group
-            invalid-feedback="Url must not be empty"
-            :state="urlState"
-        >
-          <b-form-input
-              id="url-input"
-              placeholder="Node url (with protocol)"
-              v-model="url"
-              :state="urlState"
-              required
-          ></b-form-input>
-        </b-form-group>
-        <div v-if="isDev"><b-icon variant="secondary" icon="exclamation-circle-fill"></b-icon>
-          <span style="font-size: 14px"> Pass local to connect to a local node (the url must be configured in vue.config.js as a proxy)</span></div>
-      </form>
+
+      <b-form-group
+          :invalid-feedback="invalidFeedbackUrl"
+          :state="stateUrl"
+      >
+        <b-form-input
+            id="url-input"
+            placeholder="Node url (with protocol)"
+            v-model="url"
+            :state="stateUrl"
+            trim
+        ></b-form-input>
+      </b-form-group>
+
+      <div v-if="isDev">
+        <b-icon variant="secondary" icon="exclamation-circle-fill"></b-icon>
+        <span style="font-size: 14px"> Pass local to connect to a local node (the url must be configured in vue.config.js as a proxy)</span>
+      </div>
+
     </b-modal>
   </div>
 </template>
@@ -36,13 +39,25 @@
 <script>
 export default {
   name: "NodeConnection",
+  props: {
+    isDev: Boolean
+  },
   data() {
     return {
       show: false,
-      url: '',
-      urlState: null,
-      submittedNames: [],
-      isDev: false
+      url: null,
+      submittedNames: []
+    }
+  },
+  computed: {
+    stateUrl() {
+      return this.url === null ? null : this.url.length > 0
+    },
+    invalidFeedbackUrl() {
+      if (this.url === null) {
+        return null
+      }
+      return 'Please enter a valid URL'
     }
   },
   methods: {
@@ -52,36 +67,24 @@ export default {
     closeModal() {
       this.show = false
     },
-    checkFormValidity() {
-      const valid = this.$refs.form.checkValidity()
-      this.urlState = valid
-      return valid
-    },
     resetModal() {
-      this.url = ''
-      this.urlState = null
+      this.url = null
     },
     handleOk(bvModalEvt) {
       bvModalEvt.preventDefault()
-      this.handleSubmit()
-    },
-    handleSubmit() {
-      // Exit when the form isn't valid
-      if (!this.checkFormValidity()) {
+
+      if (!this.stateUrl) {
+        this.url = ''
         return
       }
-      const remoteNodeUrl = this.isDev && this.url.trim() === 'local' ? '' : this.url.trim()
+
+      const remoteNodeUrl = this.isDev && this.url === 'local' ? '' : this.url
       this.closeModal()
       this.$emit('onConnectToNode', remoteNodeUrl)
     },
     onPanareaHotmokaClick() {
       this.closeModal()
       this.$emit('onConnectToNode', 'http://panarea.hotmoka.io')
-    }
-  },
-  created() {
-    if (location.host.indexOf("localhost") !== -1) {
-      this.isDev = true
     }
   }
 }

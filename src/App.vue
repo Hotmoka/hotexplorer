@@ -15,7 +15,7 @@
         <b-icon icon="globe"></b-icon> <span class="highlighted">{{ getRemoteNodeUrl }}</span>
       </div>
 
-      <NodeConnection @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
+      <NodeConnection :isDev="isDev" @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="searchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
