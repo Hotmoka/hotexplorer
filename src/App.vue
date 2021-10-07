@@ -2,19 +2,13 @@
   <div id="app">
     <Loader></Loader>
 
-    <b-navbar toggleable="lg" type="dark" variant="info" style="background-color: #fff !important;">
-      <div class="container" style="height: 48px">
-        <img id="hotmoka-logo" alt="Vue logo" src="./assets/big_logo_hotmoka.png" height="48" @click="goHome">
+    <Header
+        :isDev="isDev"
+        :connected-node="connectedNode"
+        @onConnectToNode="onConnectToNodeClick"
+        @onDisconnectFromNode="onDisconnectNodeClick">
+    </Header>
 
-        <b-button v-if="!connectedNode.isConnected && !connectedNode.connecting" variant="outline-primary" @click="onConnectToNodeClick">Connect to node</b-button>
-        <div style="display: flex; align-items: center" v-if="connectedNode.isConnected">
-          <div class="d-none d-sm-block connected-badge badge badge-success">
-            <b-icon icon="globe"></b-icon> <span class="highlighted">{{ getRemoteNodeUrl }}</span>
-          </div>
-          <b-icon class="exit-icon" variant="danger" icon="power" @click="onDisconnectNodeClick"></b-icon>
-        </div>
-      </div>
-    </b-navbar>
 
     <div class="container-fluid">
 
@@ -47,6 +41,7 @@ import Search from "@/components/Search";
 import Explorer from "@/components/Explorer";
 import Info from "@/components/Info";
 import Loader from "@/components/Loader"
+import Header from "@/components/Header";
 import NodeConnection from "@/components/NodeConnection";
 import {RemoteNode, StorageReferenceModel} from "hotweb3";
 import {buildBreadcrumbAddress, showSuccessToast, WrapPromiseTask} from "@/internal/utils";
@@ -60,7 +55,8 @@ export default {
     Info,
     Search,
     Explorer,
-    Loader
+    Loader,
+    Header
   },
   data() {
    return {
@@ -99,12 +95,6 @@ export default {
         show: false,
         message: ''
       }
-    },
-    goHome() {
-      if (this.$route.path !== '/') {
-        this.$router.replace({ path: '/' });
-      }
-      this.$router.go()
     },
     getRootObjectFrom(state) {
       const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
@@ -145,9 +135,10 @@ export default {
         return
       }
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
+      const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
       this.dismissErrorAlert()
-      WrapPromiseTask(() => remoteNode.getState(StorageReferenceModel.newStorageReference(hash)))
+      WrapPromiseTask(() => remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive)))
         .then(state => {
           this.explorer.rootObject = this.getRootObjectFrom(state)
           const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
@@ -207,7 +198,7 @@ export default {
       this.dismissErrorAlert()
       remoteNode = null
 
-      showSuccessToast(this, 'Remote node', 'Disconnected successfully from remote node')
+      showSuccessToast(this, 'Remote node', 'Disconnected successfully from the remote node')
     },
     /**
      * Connects to a remote node and retrieves the info of the node.
@@ -222,8 +213,7 @@ export default {
       this.getRemoteNodeInfo(callback)
     }
   },
-  created() {
-
+  mounted() {
     if (location.host.indexOf("localhost") !== -1) {
       this.isDev = true
     }
@@ -271,10 +261,6 @@ $theme-colors: (
   padding-bottom: 1.5rem;
 }
 
-#hotmoka-logo {
-  cursor: pointer;
-}
-
 code, .breadcrumb span, .breadcrumb a {
   word-break: break-word !important;
 }
@@ -299,31 +285,9 @@ code, .breadcrumb span, .breadcrumb a {
   margin-top: 2rem;
 }
 
-.connected-badge {
-  display: inline-block;
-  font-weight: 400;
-  text-align: center;
-  vertical-align: middle;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  border: 1px solid transparent;
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 0.25rem;
-}
-
 .mobile-node-url {
   width: 100%;
   margin-bottom: -3rem;
-}
-
-.exit-icon {
-  width: 32px; height: 32px;
-  margin-left: 12px;
-  cursor: pointer;
 }
 
 .margin-top-page {
@@ -349,6 +313,20 @@ code, .breadcrumb span, .breadcrumb a {
   color: #fff !important;
   font-weight: bolder;
 }
-
+.connected-badge {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+}
 
 </style>
