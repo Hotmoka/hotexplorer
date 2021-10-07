@@ -5,10 +5,9 @@
     <Header
         :isDev="isDev"
         :connected-node="connectedNode"
-        @onConnectToNode="onConnectToNodeClick"
-        @onDisconnectFromNode="onDisconnectNodeClick">
+        @onConnectToNode="openConnectionModal"
+        @onDisconnectFromNode="disconnectFromNode">
     </Header>
-
 
     <div class="container-fluid">
 
@@ -17,13 +16,13 @@
       </div>
 
       <NodeConnection @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
-      <Search @onSearch="onSearchFromRoot"></Search>
+      <Search @onSearch="searchFromRoot"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
-          <Info id="hot-info" @onSearch="onSearch" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
+          <Info id="hot-info" @onSearch="searchByAddress" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
-          <Explorer id="hot-explorer" @onSearch="onSearch" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
+          <Explorer id="hot-explorer" @onSearch="searchByAddress" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
         </div>
       </div>
     </div>
@@ -44,7 +43,14 @@ import Loader from "@/components/Loader"
 import Header from "@/components/Header";
 import NodeConnection from "@/components/NodeConnection";
 import {RemoteNode, StorageReferenceModel} from "hotweb3";
-import {buildBreadcrumbAddress, showSuccessToast, WrapPromiseTask} from "@/internal/utils";
+import {
+  buildBreadcrumbAddress,
+  dismissErrorAlert,
+  EventBus,
+  showErrorAlert,
+  showSuccessToast,
+  WrapPromiseTask
+} from "@/internal/utils";
 
 let remoteNode = null
 
@@ -84,18 +90,6 @@ export default {
     }
   },
   methods: {
-    showErrorAlert(message) {
-      this.errorAlert = {
-        message: message,
-        show: true
-      }
-    },
-    dismissErrorAlert() {
-      this.errorAlert = {
-        show: false,
-        message: ''
-      }
-    },
     getRootObjectFrom(state) {
       const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
       return rootObject.length > 0 ? rootObject[0] : null
@@ -109,58 +103,55 @@ export default {
     clearAddresses() {
       this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
     },
-    onSearchFromRoot(objectAddress) {
+    searchFromRoot(objectAddress) {
       this.explorer.state = null
       this.explorer.addresses = [...this.explorer.addresses]
       this.explorer.rootObject = null
-      this.onSearch(objectAddress)
+      this.searchByAddress(objectAddress)
     },
     /**
-     * It retrieves the state of an object.
+     * It retrieves the state of an object by performing a search based on its address.
      * @param objectAddress the address of the object
      */
-    onSearch(objectAddress) {
-      if (remoteNode === null) {
-        this.errorAlert = {
-          message: 'Not connected to remote node',
-          show: true
+    searchByAddress(objectAddress) {
+      WrapPromiseTask(async () => {
+        if (remoteNode === null) {
+          throw new Error('Not connected to remote node')
         }
-        return
-      }
-      if (!objectAddress) {
-        this.errorAlert = {
-          message: 'Invalid Object address',
-          show: true
-        }
-        return
-      }
-      const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
-      const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
-      this.dismissErrorAlert()
-      WrapPromiseTask(() => remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive)))
-        .then(state => {
-          this.explorer.rootObject = this.getRootObjectFrom(state)
-          const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
-          if (breadcrumbAddress) {
-            this.setInactiveBreadcrumbs()
-            const index = this.breadcrumbIndexOf(breadcrumbAddress)
-            if (index === -1) {
-              this.explorer.addresses.push(breadcrumbAddress)
-            } else {
-              this.explorer.addresses[index].active = true
-            }
+        if (!objectAddress) {
+          throw new Error('Invalid Object address')
+        }
+
+        const hash = objectAddress.indexOf('#') !== -1 ? objectAddress.split('#')[0] : objectAddress
+        if (hash.length !== 64) {
+          throw new Error('Invalid hash address length')
+        }
+        const progressive = objectAddress.indexOf('#') !== -1 ? objectAddress.split('#')[1] : '0'
+
+        return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
+      }).then(state => {
+        this.explorer.rootObject = this.getRootObjectFrom(state)
+        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
+
+        if (breadcrumbAddress) {
+          this.setInactiveBreadcrumbs()
+          const index = this.breadcrumbIndexOf(breadcrumbAddress)
+          if (index === -1) {
+            this.explorer.addresses.push(breadcrumbAddress)
+          } else {
+            this.explorer.addresses[index].active = true
           }
-          this.explorer.state = state
-        })
-        .catch(err => this.showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
+        }
+        this.explorer.state = state
+
+      }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
      * Retrieves the info of the remote node.
      * @callback an optional callback to be invoked after a successful response
      */
     getRemoteNodeInfo(callback) {
-      this.dismissErrorAlert()
       WrapPromiseTask(() => remoteNode.info())
         .then(info => {
           this.connectedNode.connecting = false
@@ -173,16 +164,16 @@ export default {
         })
         .catch(() => {
           this.connectedNode.connecting = false
-          this.showErrorAlert('Cannot get node information')
+          showErrorAlert('Cannot get node information')
         })
     },
-    onConnectToNodeClick() {
+    openConnectionModal() {
       this.$refs.nodeConnectionModal.showModal()
     },
     /**
      * It disconnects from the remote node.
      */
-    onDisconnectNodeClick() {
+    disconnectFromNode() {
       localStorage.removeItem('node-url')
       this.connectedNode = {
         url: null,
@@ -195,9 +186,9 @@ export default {
         rootObject: null
       }
       this.nodeInfo = null
-      this.dismissErrorAlert()
       remoteNode = null
 
+      dismissErrorAlert()
       showSuccessToast(this, 'Remote node', 'Disconnected successfully from the remote node')
     },
     /**
@@ -213,6 +204,9 @@ export default {
       this.getRemoteNodeInfo(callback)
     }
   },
+  created() {
+    EventBus.$on('onErrorAlert', errorAlert => this.errorAlert = errorAlert)
+  },
   mounted() {
     if (location.host.indexOf("localhost") !== -1) {
       this.isDev = true
@@ -222,8 +216,8 @@ export default {
 
     // check for address in url
     if (this.$route && this.$route.query && this.$route.query.address) {
-      const objectAddress = this.$route.query.address
-      searchAddressCallback = () => this.onSearchFromRoot(objectAddress)
+      const objectAddress = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
+      searchAddressCallback = () => this.searchFromRoot(objectAddress)
     }
 
     // connect to remote node

@@ -18,6 +18,20 @@ export const showSuccessToast = (vue, title, message) => showToast(vue, title, m
 
 export const showErrorToast = (vue, title, message) => showToast(vue, title, message, 'danger')
 
+export const showErrorAlert = message => {
+    EventBus.$emit('onErrorAlert', {
+        message: message,
+        show: true
+    })
+}
+
+export const dismissErrorAlert = () => {
+    EventBus.$emit('onErrorAlert', {
+        message: '',
+        show: false
+    })
+}
+
 export const buildBreadcrumbAddress = rootAddress => {
     if (rootAddress) {
         let className = ''
@@ -47,6 +61,7 @@ export const buildBreadcrumbAddress = rootAddress => {
 export const WrapPromiseTask = (promiseTask) => {
     return new Promise((resolve, reject) => {
 
+        dismissErrorAlert()
         EventBus.$emit('showSpinner', true)
         Promise.resolve(promiseTask())
             .then(result => {
