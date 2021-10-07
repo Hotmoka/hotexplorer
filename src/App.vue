@@ -47,7 +47,7 @@ import Search from "@/components/Search";
 import Explorer from "@/components/Explorer";
 import Info from "@/components/Info";
 import NodeConnection from "@/components/NodeConnection";
-import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
+import {RemoteNode, StorageReferenceModel} from "hotweb3";
 import {buildBreadcrumbAddress, EventBus, showSuccessToast, WrapPromiseTask} from "@/internal/utils";
 
 let remoteNode = null
@@ -118,6 +118,12 @@ export default {
     clearAddresses() {
       this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
     },
+    onSearchFromRoot(objectAddress) {
+      this.explorer.state = null
+      this.explorer.addresses = [...this.explorer.addresses]
+      this.explorer.rootObject = null
+      this.onSearch(objectAddress)
+    },
     /**
      * It retrieves the state of an object.
      * @param objectAddress the address of the object
@@ -138,10 +144,9 @@ export default {
         return
       }
       const hash = objectAddress.indexOf('#') > -1 ? objectAddress.split('#')[0] : objectAddress
-      const progressive = objectAddress.indexOf('#') > -1 ? parseInt(objectAddress.split('#')[1], 16) : '0'
 
       this.dismissErrorAlert()
-      WrapPromiseTask(() => remoteNode.getState(new StorageReferenceModel(new TransactionReferenceModel('local', hash), progressive)))
+      WrapPromiseTask(() => remoteNode.getState(StorageReferenceModel.newStorageReference(hash)))
         .then(state => {
           this.explorer.rootObject = this.getRootObjectFrom(state)
           const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
@@ -178,12 +183,6 @@ export default {
           this.connectedNode.connecting = false
           this.showErrorAlert('Cannot get node information')
         })
-    },
-    onSearchFromRoot(objectAddress) {
-      this.explorer.state = null
-      this.explorer.addresses = [...this.explorer.addresses]
-      this.explorer.rootObject = null
-      this.onSearch(objectAddress)
     },
     onConnectToNodeClick() {
       this.$refs.nodeConnectionModal.showModal()
@@ -233,7 +232,7 @@ export default {
 
     // check for address in url
     if (this.$route && this.$route.query && this.$route.query.address) {
-      const objectAddress = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
+      const objectAddress = this.$route.query.address
       searchAddressCallback = () => this.onSearchFromRoot(objectAddress)
     }
 

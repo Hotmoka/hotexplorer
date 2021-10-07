@@ -16,7 +16,6 @@ const router = new VueRouter({
   base: '/hotexplorer/',
   routes: [
     { path: '/', component: App },
-   // { path: '/:address', component: App },
     { path: '*', redirect: '/' }
   ]
 })
