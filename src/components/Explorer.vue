@@ -23,6 +23,7 @@
     </div>
 
     <State :hotmokaObject="explorer.hotmokaObject" @onAddressSearch="searchAddress"></State>
+    <Transaction :transaction="explorer.transaction"></Transaction>
 
   </div>
 </template>
@@ -30,14 +31,19 @@
 <script>
 import {StateModel} from "hotweb3";
 import State from "@/components/State";
+import Transaction from "@/components/Transaction";
 export default {
   name: "Explorer",
-  components: { State },
+  components: { State, Transaction },
   props: {
     explorer: {
       hotmokaObject: {
         state: StateModel,
         rootObject: Object
+      },
+      transaction: {
+        request: Object,
+        response: Object
       },
       addresses: []
     }
@@ -61,4 +67,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.h-badge {
+  padding: 6px;
+  cursor: pointer;
+}
+
+
+@media only screen and (max-width: 768px) {
+  .h-badge {
+    margin-bottom: 12px !important;
+  }
+}
+
 </style>

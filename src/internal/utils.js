@@ -32,7 +32,7 @@ export const dismissErrorAlert = () => {
     })
 }
 
-export const buildBreadcrumbAddress = (rootAddress) => {
+export const buildBreadcrumbAddress = rootAddress => {
     if (rootAddress) {
         let className = ''
         if (rootAddress.className && rootAddress.className.length > 0) {
@@ -49,6 +49,19 @@ export const buildBreadcrumbAddress = (rootAddress) => {
             href: '#',
             id: address,
             type: 'address'
+        }
+    }
+    return null
+}
+
+export const buildBreadcrumbTransactionAddress = transactionHash => {
+    if (transactionHash) {
+        return {
+            text: transactionHash,
+            active: true,
+            href: '#',
+            id: transactionHash,
+            type: 'transaction'
         }
     }
     return null

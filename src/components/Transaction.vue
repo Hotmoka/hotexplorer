@@ -1,28 +1,20 @@
 <template>
 
   <b-card
-      v-if="hotmokaObject.state"
+      v-if="transaction && transaction.request && transaction.response"
       class="shadow-sm hot-card-header"
       header-bg-variant="primary"
       header-tag="header">
 
     <template #header>
-      <h6 class="mb-0" v-if="hotmokaObject.state.updates.length > 0">
-        <b-badge variant="secondary" style="margin-right: 6px">
-          {{ hotmokaObject.state.updates.length - 1 }}
-        </b-badge>
-        <span class="highlighted">Storage fields of</span> <span class="highlighted root-address-name">{{
-          hotmokaObject.rootObject.className
-        }}</span>
-      </h6>
-      <h6 class="mb-0" v-if="hotmokaObject.state.updates.length === 0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Updates</h6>
+      <h6 class="mb-0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Transaction</h6>
     </template>
 
     <b-card-body>
 
-      <p v-if="hotmokaObject.state.updates.length === 0">Try with other object address</p>
+<!--      <p v-if="hotmokaObject.state.updates.length === 0">Try with other object address</p>-->
 
-      <div v-if="hotmokaObject.rootObject">
+<!--      <div v-if="hotmokaObject.rootObject">
         <div v-if="getAddressOfRootObject" class="text-left">
           <b-card-text class="header-updates no-margin-t-b">Object address</b-card-text>
           <p style="margin-bottom: 16px">{{getAddressOfRootObject}}</p>
@@ -32,14 +24,15 @@
           <b-card-text class="header-updates no-margin-t-b">Jar address </b-card-text>
           <p style="margin-bottom: 0">{{ hotmokaObject.rootObject.jar.hash }}</p>
         </div>
-      </div>
+      </div>-->
 
 
-      <div class="accordion" role="tablist" v-if="hotmokaObject.state.updates.length > 0">
+      <div class="accordion" role="tablist">
 
         <!-- value fields -->
-        <b-card-text class="header-updates" v-if="getStorageValues.length > 0">Value fields</b-card-text>
-        <div
+        <b-card-text class="header-updates">Request</b-card-text>
+
+<!--        <div
             v-for="(update, index) in getStorageValues"
             :key="index"
         >
@@ -89,11 +82,12 @@
             </b-collapse>
 
           </b-card>
-        </div>
+        </div>-->
         <!-- end value fields-->
 
         <!-- reference fields -->
-        <b-card-text class="header-updates" v-if="getStorageReferences.length > 0">Reference fields</b-card-text>
+        <b-card-text class="header-updates">Response</b-card-text>
+<!--
         <div
             v-for="(update, index) in getStorageReferences"
             :key="index + getStorageValues.length"
@@ -144,7 +138,7 @@
             </b-collapse>
 
           </b-card>
-        </div>
+        </div>-->
         <!-- end reference fields -->
 
       </div>
@@ -154,59 +148,17 @@
 </template>
 
 <script>
-import {StateModel} from "hotweb3";
-
 export default {
-  name: "State",
+  name: "Transaction",
   props: {
-    hotmokaObject: {
-      state: StateModel,
-      rootObject: Object
-    }
-  },
-  computed: {
-    getStorageValues() {
-      return this.hotmokaObject.state.updates.filter(update => update.value && update.value.type && update.value.type !== 'reference')
-    },
-    getStorageReferences() {
-      return this.hotmokaObject.state.updates.filter(update => update.value && update.value.type && update.value.type === 'reference')
-    },
-    getAddressOfRootObject() {
-      if (this.hotmokaObject.rootObject && this.hotmokaObject.rootObject.object && this.hotmokaObject.rootObject.object.transaction && this.hotmokaObject.rootObject.object.transaction.hash) {
-        return this.hotmokaObject.rootObject.object.transaction.hash + '#' + parseInt(this.hotmokaObject.rootObject.object.progressive).toString(16)
-      }
-      return null
-    }
-  },
-  methods: {
-    onAddressClick(objectAddress) {
-      const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
-      this.$emit('onAddressSearch', address)
+    transaction: {
+      request: Object,
+      response: Object
     }
   }
 }
 </script>
 
 <style scoped>
-
-.header-updates {
-  text-align: left !important;
-  color: rgba(0,0,0,.65) !important;
-  font-weight: bold;
-  margin-top: 1rem !important;
-}
-
-.root-address-name {
-  color: #311b92  !important;
-}
-
-.no-margin-t-b {
-  margin-top: 0!important;
-  margin-bottom: 0!important;
-}
-
-.card-body {
-  padding: 0.75rem !important;
-}
 
 </style>

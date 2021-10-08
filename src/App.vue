@@ -17,14 +17,27 @@
 
       <NodeConnection :isDev="isDev" @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
       <Search @onSearch="search"></Search>
+
       <div class="row">
         <div class="col-sm-12 col-md-3">
-          <Info id="hot-info" @onAddressSearch="searchByAddress" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
+          <Info
+              id="hot-info"
+              @onAddressSearch="searchByAddress"
+              :nodeInfo="nodeInfo"
+              :node-url="connectedNode.url">
+          </Info>
         </div>
         <div class="col-sm-12 col-md-9">
-          <Explorer id="hot-explorer" @onAddressSearch="searchByAddress" @onTransactionSearch="searchByTransaction" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
+          <Explorer
+              id="hot-explorer"
+              @onAddressSearch="searchByAddress"
+              @onTransactionSearch="searchByTransaction"
+              @onClearAddresses="clearAddresses"
+              :explorer="explorer">
+          </Explorer>
         </div>
       </div>
+
     </div>
 
     <b-alert v-model="errorAlert.show" variant="danger" dismissible class="position-fixed error-alert ">
@@ -44,7 +57,7 @@ import Header from "@/components/Header";
 import NodeConnection from "@/components/NodeConnection";
 import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
 import {
-  buildBreadcrumbAddress,
+  buildBreadcrumbAddress, buildBreadcrumbTransactionAddress,
   dismissErrorAlert,
   EventBus, getRootObjectFrom,
   showErrorAlert,
@@ -76,6 +89,10 @@ export default {
          rootObject: null,
          state: null,
        },
+       transaction: {
+         request: null,
+         response: null
+       },
        addresses: []
      },
      nodeInfo: null,
@@ -98,7 +115,31 @@ export default {
           state: null,
           rootObject: null
         },
+        transaction: {
+          request: null,
+          response: null
+        },
         addresses: addresses || []
+      }
+    },
+    setTransaction(transaction) {
+      this.explorer = {
+        hotmokaObject: {
+          state: null,
+          rootObject: null
+        },
+        transaction: transaction,
+        addresses: this.explorer.addresses
+      }
+    },
+    setHotmokaObjectState(hotmokaObjectState) {
+      this.explorer = {
+        hotmokaObject: hotmokaObjectState,
+        transaction: {
+          request: null,
+          response: null
+        },
+        addresses: this.explorer.addresses
       }
     },
     breadcrumbIndexOf(breadcrumb) {
@@ -114,8 +155,18 @@ export default {
         this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
       }
     },
+    addBreadcrumbAddress(breadcrumbAddress) {
+      if (breadcrumbAddress) {
+        this.setInactiveBreadcrumbs()
+        const index = this.breadcrumbIndexOf(breadcrumbAddress)
+        if (index === -1) {
+          this.explorer.addresses.push(breadcrumbAddress)
+        } else {
+          this.explorer.addresses[index].active = true
+        }
+      }
+    },
     search(props) {
-      this.resetExplorer(this.explorer.addresses)
 
       if (props.searchType === 'address') {
         this.searchByAddress(props.address)
@@ -147,25 +198,17 @@ export default {
         const response = await remoteNode.getResponseAt(new TransactionReferenceModel('local', transactionHash))
         return { request, response }
 
-      }).then(state => {
-        this.explorer.hotmokaObject.rootObject = getRootObjectFrom(state)
-        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
-
-        if (breadcrumbAddress) {
-          this.setInactiveBreadcrumbs()
-          const index = this.breadcrumbIndexOf(breadcrumbAddress)
-          if (index === -1) {
-            this.explorer.addresses.push(breadcrumbAddress)
-          } else {
-            this.explorer.addresses[index].active = true
-          }
-        }
-        this.explorer.state = state
-
+      }).then(result => {
+        this.setTransaction({
+            request: result.request,
+            response: result.response
+        })
+        const breadcrumbAddress = buildBreadcrumbTransactionAddress(transactionHash)
+        this.addBreadcrumbAddress(breadcrumbAddress)
       }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
-     * It retrieves the state of hotmoka object by performing a search based on its address.
+     * It retrieves the state of a hotmoka object by performing a search based on its address.
      * @param address the address of the object
      */
     searchByAddress(address) {
@@ -186,20 +229,12 @@ export default {
 
         return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
       }).then(state => {
-        this.explorer.hotmokaObject.rootObject = getRootObjectFrom(state)
+        this.setHotmokaObjectState({
+          rootObject: getRootObjectFrom(state),
+          state: state
+        })
         const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
-
-        if (breadcrumbAddress) {
-          this.setInactiveBreadcrumbs()
-          const index = this.breadcrumbIndexOf(breadcrumbAddress)
-          if (index === -1) {
-            this.explorer.addresses.push(breadcrumbAddress)
-          } else {
-            this.explorer.addresses[index].active = true
-          }
-        }
-        this.explorer.hotmokaObject.state = state
-
+        this.addBreadcrumbAddress(breadcrumbAddress)
       }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
