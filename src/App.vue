@@ -16,13 +16,13 @@
       </div>
 
       <NodeConnection :isDev="isDev" @onConnectToNode="connectToToNode" ref="nodeConnectionModal"></NodeConnection>
-      <Search @onSearch="searchFromRoot"></Search>
+      <Search @onSearch="search"></Search>
       <div class="row">
         <div class="col-sm-12 col-md-3">
           <Info id="hot-info" @onAddressSearch="searchByAddress" :nodeInfo="nodeInfo" :node-url="connectedNode.url"></Info>
         </div>
         <div class="col-sm-12 col-md-9">
-          <Explorer id="hot-explorer" @onSearch="searchByAddress" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
+          <Explorer id="hot-explorer" @onAddressSearch="searchByAddress" @onTransactionSearch="searchByTransaction" @onClearAddresses="clearAddresses" :explorer="explorer"></Explorer>
         </div>
       </div>
     </div>
@@ -42,11 +42,11 @@ import Info from "@/components/Info";
 import Loader from "@/components/Loader"
 import Header from "@/components/Header";
 import NodeConnection from "@/components/NodeConnection";
-import {RemoteNode, StorageReferenceModel} from "hotweb3";
+import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
 import {
   buildBreadcrumbAddress,
   dismissErrorAlert,
-  EventBus,
+  EventBus, getRootObjectFrom,
   showErrorAlert,
   showSuccessToast,
   WrapPromiseTask
@@ -72,9 +72,11 @@ export default {
        url: null
      },
      explorer: {
-       state: null,
-       addresses: [],
-       rootObject: null
+       hotmokaObject: {
+         rootObject: null,
+         state: null,
+       },
+       addresses: []
      },
      nodeInfo: null,
      errorAlert: {
@@ -90,9 +92,14 @@ export default {
     }
   },
   methods: {
-    getRootObjectFrom(state) {
-      const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
-      return rootObject.length > 0 ? rootObject[0] : null
+    resetExplorer(addresses) {
+      this.explorer = {
+        hotmokaObject: {
+          state: null,
+          rootObject: null
+        },
+        addresses: addresses || []
+      }
     },
     breadcrumbIndexOf(breadcrumb) {
       return this.explorer.addresses.findIndex(address => address.id === breadcrumb.id)
@@ -101,38 +108,48 @@ export default {
       this.explorer.addresses.forEach(address => address.active = false)
     },
     clearAddresses() {
-      this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
+      if (this.explorer.addresses.length === 1) {
+         this.resetExplorer()
+      } else {
+        this.explorer.addresses = this.explorer.addresses.filter(address => address.active)
+      }
     },
-    searchFromRoot(objectAddress) {
-      this.explorer.state = null
-      this.explorer.addresses = [...this.explorer.addresses]
-      this.explorer.rootObject = null
-      this.searchByAddress(objectAddress)
+    search(props) {
+      this.resetExplorer(this.explorer.addresses)
+
+      if (props.searchType === 'address') {
+        this.searchByAddress(props.address)
+      } else if (props.searchType === 'transaction') {
+        this.searchByTransaction(props.address)
+      } else {
+        showErrorAlert('Unknown operation')
+      }
     },
     /**
-     * It retrieves the state of an object by performing a search based on its address.
-     * @param objectAddress the address of the object
+     * It searches the transaction request and response.
+     * @param transactionHash the transaction hash
      */
-    searchByAddress(objectAddress) {
+    searchByTransaction(transactionHash) {
       WrapPromiseTask(async () => {
         if (remoteNode === null) {
           throw new Error('Not connected to remote node')
         }
 
-        if (!objectAddress) {
-          throw new Error('Invalid Object address')
+        if (!transactionHash) {
+          throw new Error('Invalid transaction reference')
         }
 
-        const hash = objectAddress.indexOf('#') !== -1 ? objectAddress.split('#')[0] : objectAddress
-        if (hash.length !== 64) {
+        if (transactionHash.length !== 64) {
           throw new Error('Invalid hash address length')
         }
-        const progressive = objectAddress.indexOf('#') !== -1 ? objectAddress.split('#')[1] : '0'
 
-        return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
+        const request = await remoteNode.getRequestAt(new TransactionReferenceModel('local', transactionHash))
+        const response = await remoteNode.getResponseAt(new TransactionReferenceModel('local', transactionHash))
+        return { request, response }
+
       }).then(state => {
-        this.explorer.rootObject = this.getRootObjectFrom(state)
-        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.rootObject)
+        this.explorer.hotmokaObject.rootObject = getRootObjectFrom(state)
+        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
 
         if (breadcrumbAddress) {
           this.setInactiveBreadcrumbs()
@@ -144,6 +161,44 @@ export default {
           }
         }
         this.explorer.state = state
+
+      }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
+    },
+    /**
+     * It retrieves the state of hotmoka object by performing a search based on its address.
+     * @param address the address of the object
+     */
+    searchByAddress(address) {
+      WrapPromiseTask(async () => {
+        if (remoteNode === null) {
+          throw new Error('Not connected to remote node')
+        }
+
+        if (!address) {
+          throw new Error('Invalid Object address')
+        }
+
+        const hash = address.indexOf('#') !== -1 ? address.split('#')[0] : address
+        const progressive = address.indexOf('#') !== -1 ? address.split('#')[1] : '0'
+        if (hash.length !== 64) {
+          throw new Error('Invalid hash address length')
+        }
+
+        return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
+      }).then(state => {
+        this.explorer.hotmokaObject.rootObject = getRootObjectFrom(state)
+        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
+
+        if (breadcrumbAddress) {
+          this.setInactiveBreadcrumbs()
+          const index = this.breadcrumbIndexOf(breadcrumbAddress)
+          if (index === -1) {
+            this.explorer.addresses.push(breadcrumbAddress)
+          } else {
+            this.explorer.addresses[index].active = true
+          }
+        }
+        this.explorer.hotmokaObject.state = state
 
       }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
@@ -180,12 +235,8 @@ export default {
         isConnected: false,
         connecting: false
       }
-      this.explorer = {
-        state: null,
-        addresses: [],
-        rootObject: null
-      }
       this.nodeInfo = null
+      this.resetExplorer()
       remoteNode = null
 
       dismissErrorAlert()
@@ -212,21 +263,21 @@ export default {
       this.isDev = true
     }
 
-    let searchAddressCallback = undefined
+    let searchCallback = undefined
 
     // check for address in url
     if (this.$route && this.$route.query && this.$route.query.address) {
-      const objectAddress = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
-      searchAddressCallback = () => this.searchFromRoot(objectAddress)
+      const address = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
+      searchCallback = () => this.search(address)
     }
 
     // connect to remote node
     const nodeUrl = localStorage.getItem('node-url')
     if (nodeUrl !== null) {
-      this.connectToToNode(nodeUrl, searchAddressCallback)
-    } else if (searchAddressCallback) {
+      this.connectToToNode(nodeUrl, searchCallback)
+    } else if (searchCallback) {
       // by default we connect to panarea.hotmoka.io
-      this.connectToToNode('http://panarea.hotmoka.io', searchAddressCallback)
+      this.connectToToNode('http://panarea.hotmoka.io', searchCallback)
     }
   }
 }

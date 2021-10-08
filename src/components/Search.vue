@@ -11,19 +11,21 @@
 
       <b-card-body>
 
-        <b-form @submit.prevent="onSearchClick" inline style="display: block !important;">
+        <b-form @submit.prevent="onSearchClick" inline class="justify-content-center">
+          <b-form-select id="input-search-type" v-model="selectedSearchType" :options="searchOptions"></b-form-select>
+
           <b-form-input
               id="input-object-address"
               type="text"
-              v-model="objectAddress"
-              placeholder="Enter object's address"
-              :state="isFormValid"
-              style="width: 60%"
-              required
+              v-model="address"
+              placeholder="Hotmoka address or transaction reference"
+              :state="stateAddress"
               trim
           ></b-form-input>
 
-          <b-button id="btn-search" variant="primary" type="submit" :disabled="!isFormValid">Search</b-button>
+          <b-button id="btn-search" variant="primary" type="submit" :disabled="!stateAddress">
+            <b-icon variant="light" icon="search"></b-icon>
+          </b-button>
         </b-form>
 
       </b-card-body>
@@ -36,17 +38,22 @@ export default {
   name: "Search",
   data() {
     return {
-      objectAddress: null,
+      searchOptions: [{ value: 'address', text: 'Address' }, { value: 'transaction', text: 'Transaction' }],
+      selectedSearchType: 'address',
+      address: null,
     }
   },
   methods: {
     onSearchClick() {
-      this.$emit('onSearch', this.objectAddress)
+      this.$emit('onSearch', {
+        searchType: this.selectedSearchType,
+        address: this.address
+      })
     }
   },
   computed: {
-    isFormValid() {
-      return this.objectAddress === null ? null : this.objectAddress.length > 0;
+    stateAddress() {
+      return this.address === null ? null : this.address.length > 0;
     }
   }
 }
@@ -54,21 +61,26 @@ export default {
 
 <style scoped>
 
-@media only screen and (max-width: 768px) {
+
+#btn-search {
+  margin-right: -1px;
+}
+
+@media only screen and (max-width: 575px) {
 
   #input-object-address {
-    width: 100% !important;
+    margin-top: 8px;
   }
 
   #btn-search {
-    margin-top: 12px !important;
+    margin-top: 8px;
   }
 }
 
-@media only screen and (min-width: 769px) {
+@media only screen and (min-width: 576px) {
 
-  #btn-search {
-    margin-left: 6px !important;
+  #input-object-address {
+    width: 40% !important;
   }
 }
 

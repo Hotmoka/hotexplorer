@@ -32,7 +32,7 @@ export const dismissErrorAlert = () => {
     })
 }
 
-export const buildBreadcrumbAddress = rootAddress => {
+export const buildBreadcrumbAddress = (rootAddress) => {
     if (rootAddress) {
         let className = ''
         if (rootAddress.className && rootAddress.className.length > 0) {
@@ -47,10 +47,19 @@ export const buildBreadcrumbAddress = rootAddress => {
             text: address + className,
             active: true,
             href: '#',
-            id: address
+            id: address,
+            type: 'address'
         }
     }
     return null
+}
+
+export const getRootObjectFrom = state => {
+    if (!state) {
+        return null
+    }
+    const rootObject = state.updates.filter(update => update.className !== undefined && update.className !== null)
+    return rootObject.length > 0 ? rootObject[0] : null
 }
 
 /**
