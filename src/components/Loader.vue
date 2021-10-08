@@ -1,5 +1,7 @@
 <template>
-  <div v-if="showSpinner" id="loader" class="loader">Loading...</div>
+  <div v-if="showSpinner" class="container-loader">
+    <div id="loader" class="loader">Loading...</div>
+  </div>
 </template>
 
 <script>
@@ -20,7 +22,16 @@ export default {
 
 <style scoped lang="scss">
 
+.container-loader {
+  background-color: rgba(255, 255, 255, 0.6);
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 99;
+}
+
 .loader {
+  background-color: #00ffe1;
   position: absolute !important;
   top: 40%;
   left: 50%;
