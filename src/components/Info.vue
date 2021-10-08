@@ -33,7 +33,7 @@
       <!--end manifest -->
 
       <!-- manifest -->
-      <b-card no-body class="mb-1 shadow-sm hot-card-header">
+      <b-card no-body class="mb-1 shadow-sm hot-card-header" v-if="nodeInfo.manifest">
         <b-card-header header-tag="header" class="p-0" role="tab">
           <b-button block v-b-toggle="'collapsed-reference-manifest'" variant="primary" class="highlighted">
             Manifest
@@ -44,7 +44,7 @@
           <b-card-body class="text-left">
 
             <div class="row section-info">
-              <div class="col-xs-12 section-data" v-if="nodeInfo.manifest && nodeInfo.manifest.transaction">
+              <div class="col-xs-12 section-data" v-if="nodeInfo.manifest.transaction">
                 Address <code class="storage-ref-code"
                               @click="onAddressClick(nodeInfo.manifest)">{{nodeInfo.manifest.transaction.hash}}#{{parseInt(nodeInfo.manifest.progressive).toString(16)}}</code>
               </div>
@@ -53,8 +53,12 @@
                 ChainId <code>{{nodeInfo.chainId}}</code>
               </div>
 
-              <div class="col-xs-12" v-if="nodeInfo.signature">
+              <div class="col-xs-12 section-data" v-if="nodeInfo.signature">
                 Signature <code>{{nodeInfo.signature}}</code>
+              </div>
+
+              <div class="col-xs-12">
+                Faucet <code>{{nodeInfo.allowsUnsignedFaucet || 'false'}}</code>
               </div>
             </div>
           </b-card-body>
@@ -78,18 +82,67 @@
                               @click="onAddressClick(nodeInfo.gameteInfo.gamete)">{{nodeInfo.gameteInfo.gamete.transaction.hash}}#{{parseInt(nodeInfo.gameteInfo.gamete.progressive).toString(16)}}</code>
               </div>
 
-              <div class="col-xs-12 section-data" v-if="nodeInfo.gameteInfo.balanceOfGamete">
-                Balance <code>{{nodeInfo.gameteInfo.balanceOfGamete}}</code>
+              <div class="col-xs-12 section-data">
+                Balance <code>{{nodeInfo.gameteInfo.balanceOfGamete || '0'}}</code>
               </div>
 
-              <div class="col-xs-12 section-data" v-if="nodeInfo.gameteInfo.redBalance">
-                Red balance <code>{{nodeInfo.gameteInfo.redBalance}}</code>
+              <div class="col-xs-12 section-data">
+                Red balance <code>{{nodeInfo.gameteInfo.redBalance || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Max Faucet <code>{{nodeInfo.gameteInfo.maxFaucet || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12">
+                Max Red Faucet <code>{{nodeInfo.gameteInfo.maxRedFaucet || '0'}}</code>
               </div>
             </div>
           </b-card-body>
         </b-collapse>
       </b-card>
       <!--end gamete -->
+
+      <!-- gas station -->
+      <b-card no-body class="mb-1 shadow-sm hot-card-header" v-if="nodeInfo.gasStation">
+        <b-card-header header-tag="header" class="p-0" role="tab">
+          <b-button block v-b-toggle="'collapsed-reference-gasStation'" variant="primary" class="highlighted">
+            Gas station
+          </b-button>
+        </b-card-header>
+        <b-collapse :id="'collapsed-reference-gasStation'" accordion="accordion-gasStation" role="tabpanel">
+          <b-card-body class="text-left">
+            <div class="row section-info">
+              <div class="col-xs-12 section-data" v-if="nodeInfo.gasStation.gasStation">
+                Address <code class="storage-ref-code"
+                              @click="onAddressClick(nodeInfo.gasStation.gasStation)">{{nodeInfo.gasStation.gasStation.transaction.hash}}#{{parseInt(nodeInfo.gasStation.gasStation.progressive).toString(16)}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Gas price <code>{{nodeInfo.gasStation.gasPrice || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+               Max gas per transaction <code>{{nodeInfo.gasStation.maxGasPerTransaction || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Target gas at reward <code>{{nodeInfo.gasStation.targetGasAtReward || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Inflation <code>{{nodeInfo.gasStation.inflation || '0'}} (ie. {{ nodeInfo.gasStation.inflationInfo || '0%' }}) </code>
+              </div>
+
+              <div class="col-xs-12">
+                Oblivion <code>{{nodeInfo.gasStation.oblivion || '0'}} (ie. {{ nodeInfo.gasStation.oblivionInfo || '0%' }})</code>
+              </div>
+
+            </div>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+      <!--end gas station -->
 
     </div>
   </div>
