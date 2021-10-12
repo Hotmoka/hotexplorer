@@ -29,8 +29,8 @@
         </div>
 
         <div v-if="hotmokaObject.rootObject.jar" class="text-left">
-          <b-card-text class="header-updates no-margin-t-b">Jar address </b-card-text>
-          <p style="margin-bottom: 0">{{ hotmokaObject.rootObject.jar.hash }}</p>
+          <b-card-text class="header-updates no-margin-t-b">Jar reference </b-card-text>
+          <p style="margin-bottom: 0"><code class="storage-ref-code" @click="onTransactionClick(hotmokaObject.rootObject.jar.hash)">{{ hotmokaObject.rootObject.jar.hash }}</code></p>
         </div>
       </div>
 
@@ -182,6 +182,9 @@ export default {
     onAddressClick(objectAddress) {
       const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
       this.$emit('onAddressSearch', address)
+    },
+    onTransactionClick(transaction) {
+      this.$emit('onTransactionSearch', transaction)
     }
   }
 }
@@ -189,20 +192,8 @@ export default {
 
 <style scoped>
 
-.header-updates {
-  text-align: left !important;
-  color: rgba(0,0,0,.65) !important;
-  font-weight: bold;
-  margin-top: 1rem !important;
-}
-
 .root-address-name {
   color: #311b92  !important;
-}
-
-.no-margin-t-b {
-  margin-top: 0!important;
-  margin-bottom: 0!important;
 }
 
 .card-body {

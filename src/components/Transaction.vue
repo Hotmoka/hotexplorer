@@ -7,139 +7,340 @@
       header-tag="header">
 
     <template #header>
-      <h6 class="mb-0"><b-badge variant="secondary" style="margin-right: 6px">0</b-badge>Transaction</h6>
+      <h6 class="mb-0">Transaction</h6>
     </template>
 
     <b-card-body>
 
-<!--      <p v-if="hotmokaObject.state.updates.length === 0">Try with other object address</p>-->
-
-<!--      <div v-if="hotmokaObject.rootObject">
-        <div v-if="getAddressOfRootObject" class="text-left">
-          <b-card-text class="header-updates no-margin-t-b">Object address</b-card-text>
-          <p style="margin-bottom: 16px">{{getAddressOfRootObject}}</p>
-        </div>
-
-        <div v-if="hotmokaObject.rootObject.jar" class="text-left">
-          <b-card-text class="header-updates no-margin-t-b">Jar address </b-card-text>
-          <p style="margin-bottom: 0">{{ hotmokaObject.rootObject.jar.hash }}</p>
-        </div>
-      </div>-->
-
+      <div class="text-left" v-if="transaction.reference">
+        <b-card-text class="header-updates no-margin-t-b">Transaction reference</b-card-text>
+        <p style="margin-bottom: 16px">{{transaction.reference}}</p>
+      </div>
 
       <div class="accordion" role="tablist">
 
-        <!-- value fields -->
+        <!-- request -->
         <b-card-text class="header-updates">Request</b-card-text>
 
-<!--        <div
-            v-for="(update, index) in getStorageValues"
-            :key="index"
-        >
-          <b-card no-body class="mb-1" v-if="update.field && update.field.name">
+        <div>
+          <b-card no-body class="mb-1">
             <b-card-header header-tag="header" class="p-0" role="tab">
-              <b-button block v-b-toggle="'collapsed-value-' + index" variant="light" class="highlighted">
-                {{update.field.name}}:<code>{{update.field.type}} = {{update.value.value}}</code>
+              <b-button block variant="light" class="highlighted">
+                Type: <code>{{ transaction.request.type }}</code>
               </b-button>
             </b-card-header>
+          </b-card>
+        </div>
 
-            <b-collapse :id="'collapsed-value-' + index" accordion="accordion-values" role="tabpanel" v-if="update.field && update.field.type">
+        <div>
+          <b-card no-body class="mb-1" v-if="transaction.request.transactionRequestModel.signature">
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted">
+                Signature: <code>{{ transaction.request.transactionRequestModel.signature }}</code>
+              </b-button>
+            </b-card-header>
+          </b-card>
+        </div>
+
+        <div>
+          <b-card no-body class="mb-1">
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted">
+                Gas price: <code>{{ transaction.request.transactionRequestModel.gasPrice || '0' }} Panarea</code>
+              </b-button>
+            </b-card-header>
+          </b-card>
+        </div>
+
+        <div>
+          <b-card no-body class="mb-1">
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted">
+                Gas limit: <code>{{ transaction.request.transactionRequestModel.gasLimit || '0'}} Panarea</code>
+              </b-button>
+            </b-card-header>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.classpath">
+          <b-card no-body class="mb-1">
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-classpath'">
+                Classpath
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-classpath'" accordion="accordion-values" role="tabpanel">
               <b-card-body class="text-center">
-
                 <div class="row">
+                  <div class="col-12">
+
+                    <div class="d-block text-left">
+                      Reference <code class="storage-ref-code"
+                                    @click="onTransactionClick(transaction.request.transactionRequestModel.classpath)">{{
+                        transaction.request.transactionRequestModel.classpath.hash
+                      }}</code>
+                    </div>
+
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.caller">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-caller'">
+                Caller
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-caller'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+                  <div class="col-12">
+
+                    <div class="d-block text-left">
+                      Address <code class="storage-ref-code"
+                                    @click="onAddressClick(transaction.request.transactionRequestModel.caller)">{{
+                        transaction.request.transactionRequestModel.caller.transaction.hash
+                      }}#{{
+                        parseInt(transaction.request.transactionRequestModel.caller.progressive).toString(16)
+                      }}</code>
+                    </div>
+
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.receiver">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-receiver'">
+                Receiver
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-receiver'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+                  <div class="col-12">
+
+                    <div class="d-block text-left">
+                      Address <code class="storage-ref-code"
+                                    @click="onAddressClick(transaction.request.transactionRequestModel.receiver)">{{
+                        transaction.request.transactionRequestModel.receiver.transaction.hash
+                      }}#{{
+                        parseInt(transaction.request.transactionRequestModel.receiver.progressive).toString(16)
+                      }}</code>
+                    </div>
+
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.method">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-method'">
+                Method
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-method'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+
                   <div class="col-sm-6 col-xs-12">
 
                     <div class="d-block text-left">
-                      Name <code>{{update.field.name}}</code>
+                      Name <br/><code>{{transaction.request.transactionRequestModel.method.methodName}}</code>
                     </div>
 
-                    <div class="d-block text-left">
-                      Type <code>{{update.field.type}}</code>
-                    </div>
-
-                    <div class="d-block text-left">
-                      {{
-                        hotmokaObject.rootObject.className === update.field.definingClass ? 'Defining class' : 'Inherited from'
-                      }}
-                      <code>{{update.field.definingClass}}</code>
-                    </div>
                   </div>
 
                   <div class="col-sm-6 col-xs-12">
 
                     <div class="d-block text-left">
-                      Value <code>{{update.value.value}}</code>
+                      Defining class <br/> <code>{{transaction.request.transactionRequestModel.method.definingClass}}</code>
+                    </div>
+
+                  </div>
+
+                  <div class="col-12">
+                    <div class="d-block text-left">
+                      Formals: [
+                      <code v-for="(formal, index) in transaction.request.transactionRequestModel.method.formals" :key="index">
+                        {{formal}}<span v-if="index < transaction.request.transactionRequestModel.method.formals.length - 1">, </span>
+                      </code>
+                      ]
                     </div>
 
                     <div class="d-block text-left">
-                      Type <code>{{update.value.type}}</code>
+                      Actuals: [
+                      <code v-for="(actual, index) in transaction.request.transactionRequestModel.actuals" :key="index">
+                        {{actual.value}}<span v-if="index < transaction.request.transactionRequestModel.actuals.length - 1">, </span>
+                      </code>
+                      ]
+                    </div>
+
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.constructorSignature">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-constructor'">
+                Constructor
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-constructor'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="d-block text-left">
+                      Defining class <br/> <code>{{transaction.request.transactionRequestModel.constructorSignature.definingClass}}</code>
+                    </div>
+
+                    <div class="d-block text-left">
+                      Formals: [
+                      <code v-for="(formal, index) in transaction.request.transactionRequestModel.constructorSignature.formals" :key="index">
+                        {{formal}}<span v-if="index < transaction.request.transactionRequestModel.constructorSignature.formals.length - 1">, </span>
+                      </code>
+                      ]
+                    </div>
+
+                    <div class="d-block text-left">
+                      Actuals: [
+                      <code v-for="(actual, index) in transaction.request.transactionRequestModel.actuals" :key="index">
+                        {{actual.value}}<span v-if="index < transaction.request.transactionRequestModel.actuals.length - 1">, </span>
+                      </code>
+                      ]
+                    </div>
+
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+
+        <div v-if="transaction.request.transactionRequestModel.dependencies">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-dependencies'">
+                Dependencies
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-dependencies'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+                  <div class="col-12">
+
+                    <div class="d-block text-left">
+                      [
+                      <code class="storage-ref-code" @click="onTransactionClick(dependency.hash)" v-for="(dependency, index) in transaction.request.transactionRequestModel.dependencies" :key="index">
+                        {{dependency.hash}}<span v-if="index < transaction.request.transactionRequestModel.dependencies.length - 1">, </span>
+                      </code>
+                      ]
                     </div>
                   </div>
                 </div>
-
-
               </b-card-body>
             </b-collapse>
-
           </b-card>
-        </div>-->
-        <!-- end value fields-->
+        </div>
+        <!-- end request-->
 
-        <!-- reference fields -->
+        <!-- response -->
         <b-card-text class="header-updates">Response</b-card-text>
-<!--
-        <div
-            v-for="(update, index) in getStorageReferences"
-            :key="index + getStorageValues.length"
-        >
-          <b-card no-body class="mb-1" v-if="update.field && update.field.name">
+
+        <div>
+          <b-card no-body class="mb-1">
+
             <b-card-header header-tag="header" class="p-0" role="tab">
-              <b-button block v-b-toggle="'collapsed-reference-' + index + getStorageValues.length" variant="light" class="highlighted">
-                {{update.field.name}}:<code>{{update.field.type}}</code>
+              <b-button block variant="light" class="highlighted">
+                Type: <code>{{ transaction.response.type }}</code>
               </b-button>
             </b-card-header>
 
-            <b-collapse :id="'collapsed-reference-' + index + getStorageValues.length" accordion="accordion-references" role="tabpanel" v-if="update.field && update.field.type">
+          </b-card>
+        </div>
+
+        <div>
+          <b-card no-body class="mb-1">
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block v-b-toggle="'collapsed-gas'" variant="light" class="highlighted">
+                Total gas consumed: <code>{{ totalGasConsumed }} Panarea</code>
+              </b-button>
+            </b-card-header>
+
+            <b-collapse :id="'collapsed-gas'" accordion="accordion-gas" role="tabpanel">
               <b-card-body class="text-center">
 
                 <div class="row">
                   <div class="col-sm-6 col-xs-12">
 
                     <div class="d-block text-left">
-                      Name <code>{{update.field.name}}</code>
+                      Gas consumed for CPU: <code>{{
+                        transaction.response.transactionResponseModel.gasConsumedForCPU || '0'
+                      }} Panarea</code>
                     </div>
 
                     <div class="d-block text-left">
-                      Type <code>{{update.field.type}}</code>
+                      Gas consumed for RAM: <code>{{
+                        transaction.response.transactionResponseModel.gasConsumedForRAM || '0'
+                      }} Panarea</code>
                     </div>
 
                     <div class="d-block text-left">
-                      {{
-                        hotmokaObject.rootObject.className === update.field.definingClass ? 'Defining class' : 'Inherited from'
-                      }}
-                      <code>{{update.field.definingClass}}</code>
-                    </div>
-                  </div>
-
-                  <div class="col-sm-6 col-xs-12">
-
-                    <div class="d-block text-left" v-if="update.value.reference">
-                      Address <code class="storage-ref-code" @click="onAddressClick(update.value.reference)">{{update.value.reference.transaction.hash}}#{{parseInt(update.value.reference.progressive).toString(16)}}</code>
+                      Gas consumed for Storage:
+                      <code>{{ transaction.response.transactionResponseModel.gasConsumedForStorage || '0' }}
+                        Panarea</code>
                     </div>
 
-                    <div class="d-block text-left">
-                      Type <code>{{update.value.type}}</code>
-                    </div>
                   </div>
                 </div>
 
-
               </b-card-body>
             </b-collapse>
-
           </b-card>
-        </div>-->
-        <!-- end reference fields -->
+        </div>
+
+        <div v-if="transaction.response.transactionResponseModel.dependencies">
+          <b-card no-body class="mb-1" >
+            <b-card-header header-tag="header" class="p-0" role="tab">
+              <b-button block variant="light" class="highlighted" v-b-toggle="'collapsed-dependencies-response'">
+                Dependencies
+              </b-button>
+            </b-card-header>
+            <b-collapse :id="'collapsed-dependencies-response'" accordion="accordion-values" role="tabpanel">
+              <b-card-body class="text-center">
+                <div class="row">
+                  <div class="col-12">
+
+                    <div class="d-block text-left">
+                      [
+                      <code class="storage-ref-code" @click="onTransactionClick(dependency.hash)" v-for="(dependency, index) in transaction.response.transactionResponseModel.dependencies" :key="index">
+                        {{dependency.hash}}<span v-if="index < transaction.response.transactionResponseModel.dependencies.length - 1">, </span>
+                      </code>
+                      ]
+                    </div>
+                  </div>
+                </div>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </div>
+        <!-- end response -->
 
       </div>
     </b-card-body>
@@ -155,10 +356,31 @@ export default {
       request: Object,
       response: Object
     }
+  },
+  computed: {
+    totalGasConsumed() {
+      try {
+        const { gasConsumedForStorage, gasConsumedForRAM, gasConsumedForCPU } = this.transaction.response.transactionResponseModel
+        return parseInt(gasConsumedForStorage || '0') + parseInt(gasConsumedForRAM || '0') + parseInt(gasConsumedForCPU || '0')
+      } catch (e) {
+        return 0
+      }
+    }
+  },
+  methods: {
+    onAddressClick(objectAddress) {
+      const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
+      this.$emit('onAddressSearch', address)
+    },
+    onTransactionClick(transaction) {
+      this.$emit('onTransactionSearch', transaction)
+    }
   }
 }
 </script>
 
 <style scoped>
-
+.card-body {
+  padding: 0.75rem !important;
+}
 </style>

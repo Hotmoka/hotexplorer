@@ -24,7 +24,7 @@
           <b-card-body class="text-left">
             <div class="row section-info">
               <div class="col-xs-12">
-                Address <code>{{ nodeInfo.takamakaCode.hash }}</code>
+                Reference <code class="storage-ref-code" @click="onTransactionClick(nodeInfo.takamakaCode.hash)">{{ nodeInfo.takamakaCode.hash }}</code>
               </div>
             </div>
           </b-card-body>
@@ -161,7 +161,10 @@ export default {
     onAddressClick(objectAddress) {
       const address = objectAddress.transaction.hash + '#' + parseInt(objectAddress.progressive).toString(16)
       this.$emit('onAddressSearch', address)
-    }
+    },
+    onTransactionClick(transaction) {
+      this.$emit('onTransactionSearch', transaction)
+    },
   }
 }
 </script>

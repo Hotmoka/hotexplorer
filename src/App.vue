@@ -23,6 +23,7 @@
           <Info
               id="hot-info"
               @onAddressSearch="searchByAddress"
+              @onTransactionSearch="searchByTransaction"
               :nodeInfo="nodeInfo"
               :node-url="connectedNode.url">
           </Info>
@@ -87,11 +88,12 @@ export default {
      explorer: {
        hotmokaObject: {
          rootObject: null,
-         state: null,
+         state: null
        },
        transaction: {
          request: null,
-         response: null
+         response: null,
+         reference: null
        },
        addresses: []
      },
@@ -117,7 +119,8 @@ export default {
         },
         transaction: {
           request: null,
-          response: null
+          response: null,
+          reference: null
         },
         addresses: addresses || []
       }
@@ -137,7 +140,8 @@ export default {
         hotmokaObject: hotmokaObjectState,
         transaction: {
           request: null,
-          response: null
+          response: null,
+          reference: null
         },
         addresses: this.explorer.addresses
       }
@@ -167,7 +171,6 @@ export default {
       }
     },
     search(props) {
-
       if (props.searchType === 'address') {
         this.searchByAddress(props.address)
       } else if (props.searchType === 'transaction') {
@@ -201,7 +204,8 @@ export default {
       }).then(result => {
         this.setTransaction({
             request: result.request,
-            response: result.response
+            response: result.response,
+            reference: transactionHash
         })
         const breadcrumbAddress = buildBreadcrumbTransactionAddress(transactionHash)
         this.addBreadcrumbAddress(breadcrumbAddress)
@@ -300,10 +304,14 @@ export default {
 
     let searchCallback = undefined
 
-    // check for address in url
-    if (this.$route && this.$route.query && this.$route.query.address) {
-      const address = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
-      searchCallback = () => this.search(address)
+    // check for address or transaction in url
+    if (this.$route && this.$route.query) {
+      if (this.$route.query.address) {
+        const address = this.$route.query.address + (this.$route.hash ? this.$route.hash : '')
+        searchCallback = () => this.searchByAddress(address)
+      } else if (this.$route.query.transaction) {
+        searchCallback = () => this.searchByTransaction(this.$route.query.transaction)
+      }
     }
 
     // connect to remote node
@@ -407,6 +415,18 @@ code, .breadcrumb span, .breadcrumb a {
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.25rem;
+}
+
+.header-updates {
+  text-align: left !important;
+  color: rgba(0,0,0,.65) !important;
+  font-weight: bold;
+  margin-top: 1rem !important;
+}
+
+.no-margin-t-b {
+  margin-top: 0!important;
+  margin-bottom: 0!important;
 }
 
 </style>

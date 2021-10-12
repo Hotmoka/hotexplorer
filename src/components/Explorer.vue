@@ -22,8 +22,8 @@
       </div>
     </div>
 
-    <State :hotmokaObject="explorer.hotmokaObject" @onAddressSearch="searchAddress"></State>
-    <Transaction :transaction="explorer.transaction"></Transaction>
+    <State :hotmokaObject="explorer.hotmokaObject" @onAddressSearch="searchAddress" @onTransactionSearch="searchTransaction"></State>
+    <Transaction :transaction="explorer.transaction" @onAddressSearch="searchAddress" @onTransactionSearch="searchTransaction"></Transaction>
 
   </div>
 </template>
@@ -52,7 +52,14 @@ export default {
     searchAddress(address) {
       this.$emit('onAddressSearch', address)
     },
+    searchTransaction(transaction) {
+      this.$emit('onTransactionSearch', transaction)
+    },
     onBreadcrumbClick(address) {
+      if (address.active) {
+        return
+      }
+
       if (address.type === 'address') {
         this.$emit('onAddressSearch', address.id)
       } else {
