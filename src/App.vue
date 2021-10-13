@@ -221,15 +221,12 @@ export default {
           throw new Error('Not connected to remote node')
         }
 
-        if (!address) {
-          throw new Error('Invalid Object address')
+        if (!address || !StorageReferenceModel.isStorageReference(address)) {
+          throw new Error('Invalid address')
         }
 
-        const hash = address.indexOf('#') !== -1 ? address.split('#')[0] : address
-        const progressive = address.indexOf('#') !== -1 ? address.split('#')[1] : '0'
-        if (hash.length !== 64) {
-          throw new Error('Invalid hash address length')
-        }
+        const hash = address.split('#')[0]
+        const progressive = address.split('#')[1]
 
         return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
       }).then(state => {
