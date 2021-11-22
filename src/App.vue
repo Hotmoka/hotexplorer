@@ -56,17 +56,14 @@ import Info from "@/components/Info";
 import Loader from "@/components/Loader"
 import Header from "@/components/Header";
 import NodeConnection from "@/components/NodeConnection";
-import {RemoteNode, StorageReferenceModel, TransactionReferenceModel} from "hotweb3";
 import {
   buildBreadcrumbAddress, buildBreadcrumbTransactionAddress,
   dismissErrorAlert,
   EventBus, getRootObjectFrom,
   showErrorAlert,
-  showSuccessToast,
-  WrapPromiseTask
+  showSuccessToast
 } from "@/internal/utils";
-
-let remoteNode = null
+import {Service} from "@/internal/Service";
 
 export default {
   name: 'App',
@@ -184,79 +181,54 @@ export default {
      * @param transactionHash the transaction hash
      */
     searchByTransaction(transactionHash) {
-      WrapPromiseTask(async () => {
-        if (remoteNode === null) {
-          throw new Error('Not connected to remote node')
-        }
-
-        if (!transactionHash) {
-          throw new Error('Invalid transaction reference')
-        }
-
-        if (transactionHash.length !== 64) {
-          throw new Error('Invalid hash address length')
-        }
-
-        const request = await remoteNode.getRequestAt(new TransactionReferenceModel('local', transactionHash))
-        const response = await remoteNode.getResponseAt(new TransactionReferenceModel('local', transactionHash))
-        return { request, response }
-
-      }).then(result => {
-        this.setTransaction({
-            request: result.request,
-            response: result.response,
-            reference: transactionHash
-        })
-        const breadcrumbAddress = buildBreadcrumbTransactionAddress(transactionHash)
-        this.addBreadcrumbAddress(breadcrumbAddress)
-      }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
+      new Service()
+          .searchByTransaction(transactionHash)
+          .then(result => {
+            this.setTransaction({
+              request: result.request,
+              response: result.response,
+              reference: transactionHash
+            })
+            const breadcrumbAddress = buildBreadcrumbTransactionAddress(transactionHash)
+            this.addBreadcrumbAddress(breadcrumbAddress)
+          }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
      * It retrieves the state of a hotmoka object by performing a search based on its address.
      * @param address the address of the object
      */
     searchByAddress(address) {
-      WrapPromiseTask(async () => {
-        if (remoteNode === null) {
-          throw new Error('Not connected to remote node')
-        }
-
-        if (!address || !StorageReferenceModel.isStorageReference(address)) {
-          throw new Error('Invalid address')
-        }
-
-        const hash = address.split('#')[0]
-        const progressive = address.split('#')[1]
-
-        return remoteNode.getState(StorageReferenceModel.newStorageReference(hash, progressive))
-      }).then(state => {
-        this.setHotmokaObjectState({
-          rootObject: getRootObjectFrom(state),
-          state: state
-        })
-        const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
-        this.addBreadcrumbAddress(breadcrumbAddress)
-      }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
+      new Service()
+          .searchByAddress(address)
+          .then(state => {
+            this.setHotmokaObjectState({
+              rootObject: getRootObjectFrom(state),
+              state: state
+            })
+            const breadcrumbAddress = buildBreadcrumbAddress(this.explorer.hotmokaObject.rootObject)
+            this.addBreadcrumbAddress(breadcrumbAddress)
+          }).catch(err => showErrorAlert(err.message ?? 'Error while fetching object\'s state'))
     },
     /**
      * Retrieves the info of the remote node.
      * @callback an optional callback to be invoked after a successful response
      */
     getRemoteNodeInfo(callback) {
-      WrapPromiseTask(() => remoteNode.info())
-        .then(info => {
-          this.connectedNode.connecting = false
-          this.connectedNode.isConnected = true
-          this.nodeInfo = info
+      new Service()
+          .getRemoteNodeInfo()
+          .then(info => {
+            this.connectedNode.connecting = false
+            this.connectedNode.isConnected = true
+            this.nodeInfo = info
 
-          if (callback) {
-            callback()
-          }
-        })
-        .catch(() => {
-          this.connectedNode.connecting = false
-          showErrorAlert('Cannot get node information')
-        })
+            if (callback) {
+              callback()
+            }
+          })
+          .catch(() => {
+            this.connectedNode.connecting = false
+            showErrorAlert('Cannot get node information')
+          })
     },
     openConnectionModal() {
       this.$refs.nodeConnectionModal.showModal()
@@ -266,6 +238,7 @@ export default {
      */
     disconnectFromNode() {
       localStorage.removeItem('node-url')
+      this.$network.set(null)
       this.connectedNode = {
         url: null,
         isConnected: false,
@@ -273,7 +246,6 @@ export default {
       }
       this.nodeInfo = null
       this.resetExplorer()
-      remoteNode = null
 
       dismissErrorAlert()
       showSuccessToast(this, 'Remote node', 'Disconnected successfully from the remote node')
@@ -285,7 +257,7 @@ export default {
      */
     connectToToNode(url, callback) {
       localStorage.setItem('node-url', url)
-      remoteNode = new RemoteNode(url)
+      this.$network.set(url)
       this.connectedNode.connecting = true
       this.connectedNode.url = url
       this.getRemoteNodeInfo(callback)
