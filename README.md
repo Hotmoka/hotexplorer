@@ -1,5 +1,7 @@
 # hotexplorer
 
+A web application to navigate between objects of the [Hotmoka](https://www.hotmoka.io) blockchain
+
 ## Project setup
 ```
 npm install

@@ -51,6 +51,7 @@ export default {
 
 #h-navbar {
   background-color: #fff !important;
+  box-shadow: 0 2px 5px rgba(171, 154, 154, 0.4);
 }
 
 #hotmoka-logo {
