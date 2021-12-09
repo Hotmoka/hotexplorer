@@ -144,6 +144,47 @@
       </b-card>
       <!--end gas station -->
 
+      <!-- validators -->
+      <b-card no-body class="mb-1 shadow-sm hot-card-header" v-if="nodeInfo.validators">
+        <b-card-header header-tag="header" class="p-0" role="tab">
+          <b-button block v-b-toggle="'collapsed-reference-validators'" variant="primary" class="highlighted">
+            Validators
+          </b-button>
+        </b-card-header>
+        <b-collapse :id="'collapsed-reference-validators'" accordion="accordion-gasStation" role="tabpanel">
+          <b-card-body class="text-left">
+            <div class="row section-info">
+              <div class="col-xs-12 section-data" v-if="nodeInfo.validators.validatorsReference">
+                Address <code class="storage-ref-code"
+                              @click="onAddressClick(nodeInfo.validators.validatorsReference)">{{nodeInfo.validators.validatorsReference.transaction.hash}}#{{parseInt(nodeInfo.validators.validatorsReference.progressive).toString(16)}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Number of validators <code>{{nodeInfo.validators.numOfValidators}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Total supply <code>{{nodeInfo.validators.totalSupply}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Total supply red <code>{{nodeInfo.validators.totalSupplyRed || '0'}}</code>
+              </div>
+
+              <div class="col-xs-12 section-data">
+                Height <code>{{nodeInfo.validators.height}}</code>
+              </div>
+
+              <div class="col-xs-12">
+                Number of transactions <code>{{nodeInfo.validators.numberOfTransactions}}</code>
+              </div>
+
+            </div>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+      <!--end validators -->
+
     </div>
   </div>
 </template>

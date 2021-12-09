@@ -29,7 +29,7 @@
 
       <div v-if="isDev">
         <b-icon variant="secondary" icon="exclamation-circle-fill"></b-icon>
-        <span style="font-size: 14px"> Pass local to connect to a local node (the url must be configured in vue.config.js as a proxy)</span>
+        <span style="font-size: 14px"> Pass "local" to connect to a local node (the url of the local node must be configured in vue.config.js as a proxy)</span>
       </div>
 
     </b-modal>
