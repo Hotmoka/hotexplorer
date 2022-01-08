@@ -1,6 +1,6 @@
 {
   "name": "hotexplorer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -21,7 +21,7 @@
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.16.0",
     "core-js": "^3.6.5",
-    "hotweb3": "^1.0.9",
+    "hotweb3": "^1.0.11",
     "portal-vue": "^2.1.7",
     "vue": "^2.6.11",
     "vue-router": "^3.5.2"
