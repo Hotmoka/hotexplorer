@@ -21,7 +21,7 @@
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.16.0",
     "core-js": "^3.6.5",
-    "hotweb3": "^1.0.11",
+    "hotweb3": "^1.0.12",
     "portal-vue": "^2.1.7",
     "vue": "^2.6.11",
     "vue-router": "^3.5.2"
